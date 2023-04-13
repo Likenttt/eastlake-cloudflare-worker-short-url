@@ -2,7 +2,6 @@ name = "cf-worker-shorturl"
 main = "src/index.ts"
 compatibility_date = "2023-04-13"
 
-[vars]
-LINKS_NAMESPACE = "links_preivew"
+
 kv_namespaces = [
-  { binding = "links_preivew", id = "7f0bf9809c464f51871b753cdda2c124" }]
+  { binding = "LINKS_PRE", id = "7f0bf9809c464f51871b753cdda2c124" }]
