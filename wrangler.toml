@@ -1,7 +1,19 @@
 name = "cf-worker-shorturl"
 main = "src/index.ts"
 compatibility_date = "2023-04-13"
+[vars]
+USERNAME = "li2niu"
+PASSWORD = "li2niu"
 
 
 kv_namespaces = [
   { binding = "LINKS_PRE", id = "7f0bf9809c464f51871b753cdda2c124" }]
+
+[build]
+command = "npm run build"
+upload.format = "service-worker"
+
+# Add the following line to include the login.html file
+[[build.upload.rules]]
+type = "Text"
+globs = ["**/*.html"]
