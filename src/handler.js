@@ -1,5 +1,5 @@
 import * as jwt from "jsonwebtoken";
-
+import { loginHtml, shortenHtml } from "./htmls";
 async function handleLogin(request, linksKV) {
   const { username, password } = await request.json();
 
@@ -17,7 +17,7 @@ async function handleLogin(request, linksKV) {
     );
 
     // Store the JWT token in the KV namespace
-    await LINKS_PRE.put(`jwt:${username}`, token, {
+    await linksKV.put(`jwt:${username}`, token, {
       expirationTtl: 3600 * expireHour,
     });
 
@@ -30,41 +30,95 @@ async function handleLogin(request, linksKV) {
     return new Response("Invalid credentials", { status: 401 });
   }
 }
-async function serveLoginPage() {
-  // Assuming login.html is in the same directory as your worker
-  const loginPage = await fetch("./pages/login.html");
-  const body = await loginPage.text();
 
-  return new Response(body, {
-    headers: { "Content-Type": "text/html" },
-  });
+function isValidToken(token) {
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    return true;
+  } catch (err) {
+    return false;
+  }
 }
 
-async function serveShortenPage() {
-  // Assuming shorten.html is in the same directory as your worker
-  const shortenPage = await fetch("./pages/shorten.html");
-  const body = await shortenPage.text();
+function getCookie(name) {
+  const value = `; ${request.headers.get("Cookie")}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) {
+    return parts.pop().split(";").shift();
+  }
+}
 
-  return new Response(body, {
-    headers: { "Content-Type": "text/html" },
-  });
+async function handleShortenRequest(request) {
+  const token = getCookie("jwt");
+
+  if (!isValidToken(token)) {
+    return new Response(loginHtml, {
+      headers: { "Content-Type": "text/html" },
+      status: 400,
+    });
+  }
+  // Get the parameters from the request
+  const params = await request.json();
+
+  const url = new URL(params.url);
+  const path = url.pathname.substring(1); // remove leading slash
+
+  // Check if the path is already in use
+  if (path === "shorten" || path === "login" || path === "links") {
+    return new Response("Invalid path because of conflict!", { status: 400 });
+  }
+
+  // Check if the short URL key already exists
+  let key = path;
+  let value = await linksKV.get(key);
+  while (value !== null) {
+    key = generateRandomKey();
+    value = await linksKV.get(key);
+  }
+
+  // Store the parameters in KV
+  const data = {
+    expirationTime: params.expirationTime,
+    requirePassword: params.requirePassword,
+    password: params.password,
+    longUrl: params.longUrl,
+  };
+
+  await linksKV.put(key, JSON.stringify(data));
+
+  return new Response(key, { status: 200 });
+}
+function getFullDomain(request) {
+  const url = new URL(request.url);
+  const protocol = url.protocol;
+  const domain = url.hostname;
+  const fullDomain = protocol + "//" + domain;
+  return fullDomain;
 }
 
 export async function handleRequest(request) {
   const url = new URL(request.url);
   const path = url.pathname.split("/")[1];
 
-  if (path === "login") {
+  if (!path || path === "login") {
     if (request.method === "GET") {
-      return serveLoginPage();
+      return new Response(loginHtml, {
+        headers: { "Content-Type": "text/html" },
+      });
     } else if (request.method === "POST") {
-      return handleLogin(request);
+      return handleLogin(request, LINKS);
     }
   } else if (path === "shorten") {
-    return serveShortenPage();
+    if (request.method === "GET") {
+      return new Response(shortenHtml, {
+        headers: { "Content-Type": "text/html" },
+      });
+    } else if (request.method === "POST") {
+      return handleShortenRequest(request);
+    }
   } else {
     // Redirect the user to the full URL
-    const fullURL = await LINKS_PRE.get(path);
+    const fullURL = await LINKS.get(path);
     if (fullURL) {
       // Update click history
       // Add your code to update the click history
