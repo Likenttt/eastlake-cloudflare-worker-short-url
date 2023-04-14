@@ -51,7 +51,36 @@ const loginHtml = `<!DOCTYPE html>
   </body>
 </html>
 `;
+const notFoundHtml = `<!DOCTYPE html>
+<html>
+  <head>
+    <title>Page Not Found</title>
+  </head>
+  <body>
+    <h1>404 - Page Not Found</h1>
+    <p>The requested URL was not found on this server.</p>
 
+    <!-- Chinese translation -->
+    <h1>404 - 找不到页面</h1>
+    <p>请求的 URL 在此服务器上未找到。</p>
+
+    <!-- Japanese translation -->
+    <h1>404 - ページが見つかりません</h1>
+    <p>要求された URL がこのサーバー上で見つかりませんでした。</p>
+
+    <!-- French translation -->
+    <h1>404 - Page non trouvée</h1>
+    <p>L'URL demandée n'a pas été trouvée sur ce serveur.</p>
+
+    <!-- Russian translation -->
+    <h1>404 - Страница не найдена</h1>
+    <p>Запрашиваемый URL не найден на этом сервере.</p>
+
+    <!-- Portuguese translation -->
+    <h1>404 - Página não encontrada</h1>
+    <p>O URL solicitado não foi encontrado neste servidor.</p>
+  </body>
+</html>`;
 const shortenHtml = `<!DOCTYPE html>
 <html>
   <head>

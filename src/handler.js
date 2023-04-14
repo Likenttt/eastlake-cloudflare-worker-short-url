@@ -1,6 +1,6 @@
 import * as jwt from "jsonwebtoken";
-import { loginHtml, shortenHtml } from "./htmls";
-async function handleLogin(request, linksKV) {
+import { loginHtml, shortenHtml, notFoundHtml } from "./htmls";
+async function handleLogin(request) {
   const { username, password } = await request.json();
 
   // Implement your authentication logic here, for example:
@@ -17,7 +17,7 @@ async function handleLogin(request, linksKV) {
     );
 
     // Store the JWT token in the KV namespace
-    await linksKV.put(`jwt:${username}`, token, {
+    await LINKS.put(`jwt:${username}`, token, {
       expirationTtl: 3600 * expireHour,
     });
 
@@ -52,10 +52,7 @@ async function handleShortenRequest(request) {
   const token = getCookie("jwt");
 
   if (!isValidToken(token)) {
-    return new Response(loginHtml, {
-      headers: { "Content-Type": "text/html" },
-      status: 400,
-    });
+    return servePage("login");
   }
   // Get the parameters from the request
   const params = await request.json();
@@ -98,24 +95,11 @@ function getFullDomain(request) {
 
 export async function handleRequest(request) {
   const url = new URL(request.url);
-  const path = url.pathname.split("/")[1];
-
-  if (!path || path === "login") {
-    if (request.method === "GET") {
-      return new Response(loginHtml, {
-        headers: { "Content-Type": "text/html" },
-      });
-    } else if (request.method === "POST") {
-      return handleLogin(request, LINKS);
-    }
-  } else if (path === "shorten") {
-    if (request.method === "GET") {
-      return new Response(shortenHtml, {
-        headers: { "Content-Type": "text/html" },
-      });
-    } else if (request.method === "POST") {
-      return handleShortenRequest(request);
-    }
+  const path = url.pathname;
+  if (!path || path === "/api/login") {
+    return handleLogin(request);
+  } else if (path === "/api/shorten") {
+    return handleShortenRequest(request);
   } else {
     // Redirect the user to the full URL
     const fullURL = await LINKS.get(path);
@@ -125,7 +109,12 @@ export async function handleRequest(request) {
 
       return Response.redirect(fullURL, 302);
     } else {
-      return new Response("URL not found", { status: 404 });
+      return new Response(notFoundHtml, {
+        headers: {
+          "content-type": "text/html;charset=UTF-8",
+        },
+        status: 404,
+      });
     }
   }
 
