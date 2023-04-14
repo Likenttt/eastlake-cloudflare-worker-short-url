@@ -2,15 +2,26 @@
   "name": "cf-worker-shorturl",
   "version": "0.0.0",
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20230404.0",
+    "@babel/core": "^7.21.4",
+    "@babel/preset-env": "^7.21.4",
+    "@cloudflare/types": "^6.21.8",
+    "@types/jsonwebtoken": "^9.0.1",
     "@types/node": "^18.15.11",
+    "@types/webidl-conversions": "^7.0.0",
+    "babel-loader": "^9.1.2",
     "typescript": "^5.0.4",
     "wrangler": "2.14.0"
   },
   "private": true,
   "scripts": {
-    "build": "tsc",
+    "build": "babel src -d dist",
     "start": "wrangler dev",
     "deploy": "wrangler publish"
+  },
+  "dependencies": {
+    "@cloudflare/workers-types": "^4.20230404.0",
+    "jsonwebtoken": "^9.0.0",
+    "node-fetch": "^3.3.1",
+    "webidl-conversions": "^7.0.0"
   }
 }

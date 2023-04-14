@@ -1,24 +1,38 @@
-import { KVNamespace } from "@cloudflare/workers-types";
-const linksKV = LINKS_PRE as unknown as KVNamespace;
+import * as jwt from "jsonwebtoken";
 
-declare const LINKS_PRE: KVNamespace;
-
-async function handleLogin(request: Request): Promise<Response> {
-  const { username, password } = (await request.json()) as {
-    username: string;
-    password: string;
-  };
+async function handleLogin(request, linksKV) {
+  const { username, password } = await request.json();
 
   // Implement your authentication logic here, for example:
   if (username === process.env.USERNAME && password === process.env.PASSWORD) {
-    return new Response("Login successful", { status: 200 });
+    // Generate a JWT token
+    const expireHour = 24;
+    //REMEMBER TO MODIFY THIS
+    const token = jwt.sign(
+      { username },
+      process.env.JWT_SECRET || "default_secret",
+      {
+        expiresIn: expireHour + "h",
+      }
+    );
+
+    // Store the JWT token in the KV namespace
+    await LINKS_PRE.put(`jwt:${username}`, token, {
+      expirationTtl: 3600 * expireHour,
+    });
+
+    // Return the JWT token to the client
+    return new Response(JSON.stringify({ token }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } else {
     return new Response("Invalid credentials", { status: 401 });
   }
 }
-async function serveLoginPage(): Promise<Response> {
+async function serveLoginPage() {
   // Assuming login.html is in the same directory as your worker
-  const loginPage = await fetch("./login.html");
+  const loginPage = await fetch("./pages/login.html");
   const body = await loginPage.text();
 
   return new Response(body, {
@@ -26,9 +40,9 @@ async function serveLoginPage(): Promise<Response> {
   });
 }
 
-async function serveShortenPage(): Promise<Response> {
+async function serveShortenPage() {
   // Assuming shorten.html is in the same directory as your worker
-  const shortenPage = await fetch("./shorten.html");
+  const shortenPage = await fetch("./pages/shorten.html");
   const body = await shortenPage.text();
 
   return new Response(body, {
@@ -36,7 +50,7 @@ async function serveShortenPage(): Promise<Response> {
   });
 }
 
-export async function handleRequest(request: Request): Promise<Response> {
+export async function handleRequest(request) {
   const url = new URL(request.url);
   const path = url.pathname.split("/")[1];
 
@@ -50,7 +64,7 @@ export async function handleRequest(request: Request): Promise<Response> {
     return serveShortenPage();
   } else {
     // Redirect the user to the full URL
-    const fullURL = await linksKV.get(path);
+    const fullURL = await LINKS_PRE.get(path);
     if (fullURL) {
       // Update click history
       // Add your code to update the click history

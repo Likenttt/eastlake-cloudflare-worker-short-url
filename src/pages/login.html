@@ -34,6 +34,9 @@
           });
 
           if (response.ok) {
+            const { token } = await response.json();
+            // Save the JWT token in the browser's localStorage
+            localStorage.setItem("jwt", token);
             // Redirect to the shorten page or a protected page
             window.location.href = "/shorten";
           } else {
