@@ -1,20 +1,15 @@
 name = "cf-worker-shorturl"
-type = "javascript"
 main = "src/index.js"
 compatibility_date = "2023-04-13"
 node_compat = true
-vars =[{USERNAME = "li2niu",PASSWORD = "li2niu",JWT_SECRET = "fdPDU5B5Bi4",MANAGEMENT_PAGES_DOMAIN = "https://cf-worker-short-url.li2niu.com"}]
 
-kv_namespaces = [
-  { binding = "LINKS", id = "7f0bf9809c464f51871b753cdda2c124" }]
-
+[[kv_namespaces]]
+binding = "LINKS"
+id = "7f0bf9809c464f51871b753cdda2c124"
 [build]
 command = "npm run build"
+[vars]
+USERNAME = "li2niu" # Change it
+PASSWORD = "li2niu" # Change it
+JWT_SECRET = "li2niu" # Change it
 
-[[build.upload.rules]]
-type = "Text"
-globs = ["**/*.html"]
-
-[[build.upload.rules]]
-type = "Text"
-globs = ["**/*.txt"]
