@@ -2,6 +2,8 @@ import jwt from "@tsndr/cloudflare-worker-jwt";
 const invalidPaths = [
   "shorten",
   "login",
+  "del",
+  "edit",
   "links",
   "admin",
   "dashboard",
@@ -63,10 +65,9 @@ function getCookie(name) {
 
 async function handleShortenRequest(request) {
   const token = getCookie("jwt");
-
   const isValid = await jwt.verify(token, JWT_SECRET);
   if (!isValid) {
-    return servePage("login");
+    return new Response("Invalid credentials! Need Login", { status: 401 });
   }
   // Get the parameters from the request
   const params = await request.json();
@@ -221,6 +222,10 @@ export async function handleRequest(event) {
     return handleLogin(request);
   } else if (path === "/api/shorten") {
     return handleShortenRequest(request);
+  } else if (path === "/api/del") {
+    return handleDeleteRequest(request);
+  } else if (path === "/api/edit") {
+    return handleEditRequest(request);
   } else {
     // Redirect the user to the full URL
     const fullURLObj = await LINKS.get(path);
@@ -232,6 +237,67 @@ export async function handleRequest(event) {
     } else {
       response = new Response("NOT FOUND!", { status: 404 });
     }
+    enableCORS(response);
+    return response;
+  }
+
+  async function handleEditRequest(request) {
+    const token = getCookie("jwt");
+    const isValid = await jwt.verify(token, JWT_SECRET);
+    if (!isValid) {
+      return new Response("Invalid credentials! Need Login", { status: 401 });
+    }
+    const params = await request.json();
+    const {
+      shortUrl,
+      longUrl,
+      expirationTime,
+      requirePassword,
+      password,
+      shortUrlLength,
+    } = params;
+
+    if (invalidPaths.include(shortUrl)) {
+      response = new Response("Invalid path because of conflict!", {
+        status: 400,
+      });
+      enableCORS(response);
+      return response;
+    }
+    const value = await LINKS.get(shortUrl);
+    if (value !== null) {
+      response = new Response(`Short URL ${shortUrl} already exists!`, {
+        status: 400,
+      });
+      enableCORS(response);
+      return response;
+    }
+
+    // Update the record in KV
+    const data = {
+      expirationTime: expirationTime,
+      requirePassword: requirePassword,
+      password: password,
+      shortUrlLength: shortUrlLength,
+      longUrl: longUrl,
+    };
+    await LINKS.put(shortUrl, JSON.stringify(data));
+
+    response = new Response(shortUrl, { status: 200 });
+    enableCORS(response);
+    return response;
+  }
+
+  async function handleDeleteRequest(request) {
+    const token = getCookie("jwt");
+    const isValid = await jwt.verify(token, JWT_SECRET);
+    if (!isValid) {
+      return new Response("Invalid credentials! Need Login", { status: 401 });
+    }
+    const params = await request.json();
+    const { shortUrl } = params;
+    await LINKS.delete(shortUrl);
+    response = new Response(shortUrl, { status: 200 });
     enableCORS(response);
     return response;
   }
