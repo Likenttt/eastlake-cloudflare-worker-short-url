@@ -19,23 +19,23 @@ async function handleLogin(request) {
     const expireHour = 24;
     //REMEMBER TO MODIFY THIS
     console.log(`JWT_SECRET is: ${JWT_SECRET}`);
-
+    const expireTime = Math.floor(Date.now() / 1000) + expireHour * (60 * 60);
     // Creating a token
     const token = await jwt.sign(
       {
         username: username,
-        exp: Math.floor(Date.now() / 1000) + 24 * (60 * 60), // Expires: Now + 2h
+        exp: expireTime,
       },
       JWT_SECRET
     );
 
     // Store the JWT token in the KV namespace
     await LINKS.put(`jwt:${username}`, token, {
-      expirationTtl: 3600 * expireHour,
+      expirationTtl: 60 * 60 * expireHour,
     });
 
     // Return the JWT token to the client
-    response = new Response(JSON.stringify({ token }), {
+    response = new Response(JSON.stringify({ token, exp: expireTime }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
