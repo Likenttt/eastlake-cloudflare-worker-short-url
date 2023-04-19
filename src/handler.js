@@ -47,7 +47,8 @@ async function handleLogin(request) {
 }
 
 function generateRandomKey(length) {
-  const characters = "23456789abcdefghijkmnopqrstuvwxyz"; // exclude similar looking characters
+  const characters =
+    "23456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ"; // exclude similar looking characters, include uppercase letters
   let result = "";
   for (let i = 0; i < length; i++) {
     result += characters.charAt(Math.floor(Math.random() * characters.length));
@@ -55,7 +56,7 @@ function generateRandomKey(length) {
   return result;
 }
 
-function getCookie(name) {
+function getCookie(name, request) {
   const value = `; ${request.headers.get("Cookie")}`;
   const parts = value.split(`; ${name}=`);
   if (parts.length === 2) {
@@ -64,7 +65,8 @@ function getCookie(name) {
 }
 
 async function handleShortenRequest(request) {
-  const token = getCookie("jwt");
+  const token = getCookie("jwt", request);
+  console.log(`token is:${token}`);
   const isValid = await jwt.verify(token, JWT_SECRET);
   if (!isValid) {
     return new Response("Invalid credentials! Need Login", { status: 401 });
@@ -224,6 +226,8 @@ export async function handleRequest(event) {
     return handleShortenRequest(request);
   } else if (path === "/api/del") {
     return handleDeleteRequest(request);
+  } else if (path === "/api/list") {
+    return handleListRequest(request);
   } else if (path === "/api/edit") {
     return handleEditRequest(request);
   } else {
@@ -256,7 +260,7 @@ export async function handleRequest(event) {
       password,
       shortUrlLength,
     } = params;
-
+    let response;
     if (invalidPaths.include(shortUrl)) {
       response = new Response("Invalid path because of conflict!", {
         status: 400,
@@ -297,7 +301,41 @@ export async function handleRequest(event) {
     const params = await request.json();
     const { shortUrl } = params;
     await LINKS.delete(shortUrl);
-    response = new Response(shortUrl, { status: 200 });
+    const response = new Response(shortUrl, { status: 200 });
+    enableCORS(response);
+    return response;
+  }
+
+  async function handleListRequest(request) {
+    const token = getCookie("jwt");
+    const isValid = await jwt.verify(token, JWT_SECRET);
+    if (!isValid) {
+      return new Response("Invalid credentials! Need Login", { status: 401 });
+    }
+
+    const keys = await LINKS.list();
+    const shortUrls = [];
+
+    for (const key of keys.keys) {
+      if (key.name.startsWith("url:")) {
+        const value = await LINKS.get(key.name);
+        if (value) {
+          const data = JSON.parse(value);
+          shortUrls.push({
+            shortUrl: key.name,
+            longUrl: data.longUrl,
+            expirationTime: data.expirationTime,
+            requirePassword: data.requirePassword,
+          });
+        }
+      }
+    }
+
+    const response = new Response(JSON.stringify(shortUrls), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+
     enableCORS(response);
     return response;
   }
