@@ -57,11 +57,6 @@ function generateRandomKey(length) {
   return result;
 }
 
-async function getCookie(request) {
-  const { jwt } = await request.json();
-  return jwt || "";
-}
-
 function generateUniqueKey() {
   const timestamp = Date.now();
   const randomString = Math.random().toString(36).substring(2, 12);
@@ -246,6 +241,126 @@ async function addClickRecord(shortUrl, timestamp) {
   yearRecords.push(timestamp);
   await LINKS.put(CLICKS_NAMESPACE + yearKey, JSON.stringify(yearRecords), {});
 }
+function generatePasswordPage() {
+  return `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>Password Protected URL</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f3f4f6;
+          }
+          form {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 300px;
+          }
+          h1 {
+            margin-bottom: 1rem;
+            font-size: 1rem;
+          }
+          label {
+            display: block;
+            margin-bottom: 0.5rem;
+          }
+          .input-container {
+            position: relative;
+
+          }
+          input {
+            width: 100%;
+            padding: 0.5rem;
+            padding-right: 30px;
+            margin-bottom: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            box-sizing: border-box;
+          }
+
+
+          .toggle-password {
+            position: absolute;
+            top: 30%;
+            right: 10px;
+            transform: translateY(-50%);
+            cursor: pointer;
+          }
+          button {
+            width: 100%;
+            padding: 0.5rem;
+            background-color: #3f51b5;
+            color: #fff;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+          }
+          button:hover {
+            background-color: #283593;
+          }
+          footer {
+            position: absolute;
+            bottom: 1rem;
+            text-align: center;
+            font-size: 0.8rem;
+          }
+        </style>
+      </head>
+      <body>
+        <form id="passwordForm">
+          <h1>Password Protected URL</h1>
+          <label for="password">Enter Password:</label>
+          <div class="input-container">
+            <input type="password" id="password" name="password" required>
+            <span class="toggle-password" onclick="togglePasswordVisibility()">
+            &#x1F441;
+            </span>
+          </div>
+          <button type="submit">Submit</button>
+        </form>
+        <footer>
+          Made by <a href="https://blog.li2niu.com" target="_blank" rel="noopener noreferrer">li2niu</a> with love in Wuhan, China
+        </footer>
+        <script>
+          function togglePasswordVisibility() {
+            const passwordInput = document.getElementById("password");
+            if (passwordInput.type === "password") {
+              passwordInput.type = "text";
+            } else {
+              passwordInput.type = "password";
+            }
+          }
+
+          document.getElementById("passwordForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const password = document.getElementById("password").value;
+            const response = await fetch(window.location.pathname, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ password }),
+            });
+
+            if (response.status === 200) {
+              const { url } = await response.json();
+              window.location.href = url;
+            } else {
+              alert("Incorrect password. Please try again.");
+            }
+          });
+        </script>
+      </body>
+    </html>
+  `;
+}
 
 export async function handleRequest(event) {
   const request = event.request;
@@ -276,39 +391,44 @@ export async function handleRequest(event) {
     if (fullURLObj) {
       fullURLObj = JSON.parse(fullURLObj);
       if (fullURLObj.requirePassword) {
-        // check if password is required
-        if (params.password && params.password === fullURLObj.password) {
-          // check if provided password matches
-          response = Response.redirect(fullURLObj.longUrl, 302);
-          event.waitUntil(addClickRecord(path, timestamp)); // Schedule click event recording in the background
-        } else {
-          response = new Response(
-            "Please enter the password to access the URL",
-            { status: 401 }
-          ); // Unauthorized
-          response.headers.append(
-            "WWW-Authenticate",
-            'Basic realm="Restricted Area"'
-          ); // Add WWW-Authenticate header to prompt for password
+        // If the short URL requires a password, return the password page
+        if (request.method === "GET") {
+          return new Response(generatePasswordPage(), {
+            headers: { "Content-Type": "text/html" },
+          });
+        } else if (request.method === "POST") {
+          const params = await request.json();
+          console.log(
+            `password:${params.password} and fullURLObj.password ${fullURLObj.password}`
+          );
+          // Handle password validation and redirection
+          if (params.password && params.password === fullURLObj.password) {
+            // check if provided password matches
+            // event.waitUntil(addClickRecord(path, timestamp)); // Schedule click event recording in the background
+            return new Response(JSON.stringify({ url: fullURLObj.longUrl }), {
+              headers: { "Content-Type": "application/json" },
+            });
+          } else {
+            return new Response("Incorrect password", { status: 401 });
+          }
         }
       } else {
         console.log(`fullURLObj.longUrl is:${fullURLObj.longUrl}`);
-        response = Response.redirect(fullURLObj.longUrl, 302);
+        return Response.redirect(fullURLObj.longUrl, 301);
         // event.waitUntil(addClickRecord(path, timestamp)); // Schedule click event recording in the background
       }
     } else {
-      response = new Response("NOT FOUND!", { status: 404 });
+      return new Response("NOT FOUND!", { status: 404 });
     }
-    return response;
   }
 
   async function handleEditRequest(request) {
-    const token = await getCookie(request);
+    const params = await request.json();
+    const token = params.jwt;
     const isValid = await jwt.verify(token, JWT_SECRET);
     if (!isValid) {
       return new Response("Invalid credentials! Need Login", { status: 401 });
     }
-    const params = await request.json();
     const {
       shortUrl,
       longUrl,
@@ -347,21 +467,23 @@ export async function handleRequest(event) {
   }
 
   async function handleDeleteRequest(request) {
-    const token = await getCookie(request);
+    const params = await request.json();
+    const shortUrl = params.shortUrl;
+    const token = params.jwt;
     const isValid = await jwt.verify(token, JWT_SECRET);
     if (!isValid) {
       return new Response("Invalid credentials! Need Login", { status: 401 });
     }
-    const params = await request.json();
-    const { shortUrl } = params;
+
     await LINKS.delete(`url:${shortUrl}`);
-    const response = new Response(shortUrl, { status: 200 });
+    const response = new Response({ shortUrl, status: 200 }, { status: 200 });
     return response;
   }
 
   async function handleListRequest(request) {
-    const token = await getCookie(request);
-    console.log(`token is ${token}`);
+    const params = await request.json();
+    const shortUrl = params.shortUrl;
+    const token = params.jwt;
     const isValid = await jwt.verify(token, JWT_SECRET);
     if (!isValid) {
       return new Response("Invalid credentials! Need Login", { status: 401 });
@@ -380,6 +502,7 @@ export async function handleRequest(event) {
             longUrl: data.longUrl,
             expirationTime: data.expirationTime,
             requirePassword: data.requirePassword,
+            password: data.password,
           });
         }
       }
