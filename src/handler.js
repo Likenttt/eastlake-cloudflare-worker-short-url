@@ -1,4 +1,6 @@
 import jwt from "@tsndr/cloudflare-worker-jwt";
+import { parse } from "cookie";
+
 const invalidPaths = [
   "shorten",
   "login",
@@ -56,44 +58,67 @@ function generateRandomKey(length) {
   return result;
 }
 
-function getCookie(name, request) {
-  const value = `; ${request.headers.get("Cookie")}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) {
-    return parts.pop().split(";").shift();
-  }
+async function getCookie(request) {
+  const { jwt } = await request.json();
+  return jwt || "";
+}
+
+function generateUniqueKey() {
+  const timestamp = Date.now();
+  const randomString = Math.random().toString(36).substring(2, 12);
+  return `${timestamp}${randomString}`;
 }
 
 async function handleShortenRequest(request) {
-  const token = getCookie("jwt", request);
+  // Get the parameters from the request
+  const params = await request.json();
+  const token = params.jwt;
   console.log(`token is:${token}`);
   const isValid = await jwt.verify(token, JWT_SECRET);
   if (!isValid) {
     return new Response("Invalid credentials! Need Login", { status: 401 });
   }
-  // Get the parameters from the request
-  const params = await request.json();
-
-  const url = new URL(params.url);
-  const path = url.pathname.substring(1); // remove leading slash
+  const length = params.shortUrlLength;
   let response;
 
-  // Check if the path is already in use
-  if (invalidPaths.include(path)) {
-    response = new Response("Invalid path because of conflict!", {
-      status: 400,
-    });
-    enableCORS(response);
-    return response;
-  }
+  let key;
+  const url = params.shortUrl;
 
-  const length = params.shortUrlLength;
-  // Check if the short URL key already exists
-  let key = path;
-  let value = await LINKS.get(key);
-  while (value !== null) {
+  if (url === null || url === "") {
+    console.log("url is empty");
     key = generateRandomKey(length);
-    value = await LINKS.get(key);
+    let value = await LINKS.get(key);
+    while (value !== null) {
+      key = generateRandomKey(length);
+      value = await LINKS.get(key);
+    }
+    key = `url:${key}`;
+  } else {
+    console.log("url is not empty");
+
+    // Check if the path is already in use
+    if (invalidPaths.includes(url)) {
+      response = new Response("Invalid path because of conflict!", {
+        status: 400,
+      });
+      enableCORS(response);
+      return response;
+    }
+    key = `url:${url}`;
+    const value = await LINKS.get(key);
+    if (value !== null && JSON.parse(value).longUrl !== params.longUrl) {
+      const response = new Response("The shortUrl has been used!", {
+        status: 400,
+      });
+      enableCORS(response);
+      return response;
+    }
+    const oldShortUrl = params.oldShortUrl;
+    if (url !== oldShortUrl && value !== null) {
+      const oldUrlKey = `url:${oldShortUrl}`;
+
+      await LINKS.delete(oldUrlKey);
+    }
   }
 
   // Store the parameters in KV
@@ -103,10 +128,16 @@ async function handleShortenRequest(request) {
     password: params.password,
     shortUrlLength: length,
     longUrl: params.longUrl,
+    id: params.id || generateUniqueKey(),
   };
 
   await LINKS.put(key, JSON.stringify(data));
-  response = new Response(key, { status: 200 });
+  const result = {
+    status: 200,
+    shortUrl: key.split(":")[1],
+    ...data,
+  };
+  response = new Response(JSON.stringify(result), { status: 200 });
   enableCORS(response);
   return response;
 }
@@ -231,22 +262,48 @@ export async function handleRequest(event) {
   } else if (path === "/api/edit") {
     return handleEditRequest(request);
   } else {
+    if (path == "/") {
+      console.log("special redirect");
+    }
     // Redirect the user to the full URL
-    const fullURLObj = await LINKS.get(path);
+    const pathWithoutSlash = path.substring(1);
+    const key = `url:${pathWithoutSlash}`;
+    console.log(`path is:${key}`);
+    let fullURLObj = await LINKS.get(key);
     let response;
+    console.log(`path is:${JSON.stringify(fullURLObj)}`);
+
     if (fullURLObj) {
-      const timestamp = new Date().getTime();
-      response = Response.redirect(fullURLObj.longUrl, 302);
-      event.waitUntil(addClickRecord(path, timestamp)); // Schedule click event recording in the background
+      fullURLObj = JSON.parse(fullURLObj);
+      if (fullURLObj.requirePassword) {
+        // check if password is required
+        if (params.password && params.password === fullURLObj.password) {
+          // check if provided password matches
+          response = Response.redirect(fullURLObj.longUrl, 302);
+          event.waitUntil(addClickRecord(path, timestamp)); // Schedule click event recording in the background
+        } else {
+          response = new Response(
+            "Please enter the password to access the URL",
+            { status: 401 }
+          ); // Unauthorized
+          response.headers.append(
+            "WWW-Authenticate",
+            'Basic realm="Restricted Area"'
+          ); // Add WWW-Authenticate header to prompt for password
+        }
+      } else {
+        console.log(`fullURLObj.longUrl is:${fullURLObj.longUrl}`);
+        response = Response.redirect(fullURLObj.longUrl, 302);
+        // event.waitUntil(addClickRecord(path, timestamp)); // Schedule click event recording in the background
+      }
     } else {
       response = new Response("NOT FOUND!", { status: 404 });
     }
-    enableCORS(response);
     return response;
   }
 
   async function handleEditRequest(request) {
-    const token = getCookie("jwt");
+    const token = await getCookie(request);
     const isValid = await jwt.verify(token, JWT_SECRET);
     if (!isValid) {
       return new Response("Invalid credentials! Need Login", { status: 401 });
@@ -293,7 +350,7 @@ export async function handleRequest(event) {
   }
 
   async function handleDeleteRequest(request) {
-    const token = getCookie("jwt");
+    const token = await getCookie(request);
     const isValid = await jwt.verify(token, JWT_SECRET);
     if (!isValid) {
       return new Response("Invalid credentials! Need Login", { status: 401 });
@@ -307,7 +364,8 @@ export async function handleRequest(event) {
   }
 
   async function handleListRequest(request) {
-    const token = getCookie("jwt");
+    const token = await getCookie(request);
+    console.log(`token is ${token}`);
     const isValid = await jwt.verify(token, JWT_SECRET);
     if (!isValid) {
       return new Response("Invalid credentials! Need Login", { status: 401 });
