@@ -114,9 +114,9 @@ async function handleShortenRequest(request) {
       return response;
     }
     const oldShortUrl = params.oldShortUrl;
-    if (url !== oldShortUrl && value !== null) {
-      const oldUrlKey = `url:${oldShortUrl}`;
-
+    const oldUrlKey = `url:${oldShortUrl}`;
+    const oldUrlValue = await LINKS.get(oldUrlKey);
+    if (url !== oldShortUrl && oldUrlValue !== null) {
       await LINKS.delete(oldUrlKey);
     }
   }
