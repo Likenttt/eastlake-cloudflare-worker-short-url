@@ -44,7 +44,6 @@ async function handleLogin(request) {
   } else {
     response = new Response("Invalid credentials", { status: 401 });
   }
-  enableCORS(response);
   return response;
 }
 
@@ -67,6 +66,11 @@ function generateUniqueKey() {
   const timestamp = Date.now();
   const randomString = Math.random().toString(36).substring(2, 12);
   return `${timestamp}${randomString}`;
+}
+function formatExpirationTime(expirationTime) {
+  const now = new Date();
+  const expirationDate = new Date(now.getTime() + expirationTime * 60 * 1000);
+  return expirationDate.getTime();
 }
 
 async function handleShortenRequest(request) {
@@ -101,7 +105,6 @@ async function handleShortenRequest(request) {
       response = new Response("Invalid path because of conflict!", {
         status: 400,
       });
-      enableCORS(response);
       return response;
     }
     key = `url:${url}`;
@@ -110,7 +113,6 @@ async function handleShortenRequest(request) {
       const response = new Response("The shortUrl has been used!", {
         status: 400,
       });
-      enableCORS(response);
       return response;
     }
     const oldShortUrl = params.oldShortUrl;
@@ -121,38 +123,36 @@ async function handleShortenRequest(request) {
     }
   }
 
+  const expirationTime = params.expirationTime;
+
   // Store the parameters in KV
   const data = {
-    expirationTime: params.expirationTime,
+    expirationTime:
+      expirationTime === 0 ? 0 : formatExpirationTime(expirationTime),
     requirePassword: params.requirePassword,
     password: params.password,
     shortUrlLength: length,
     longUrl: params.longUrl,
     id: params.id || generateUniqueKey(),
   };
-
-  await LINKS.put(key, JSON.stringify(data));
+  if (expirationTime === 0) {
+    await LINKS.put(key, JSON.stringify(data));
+  } else {
+    await LINKS.put(key, JSON.stringify(data), {
+      expirationTtl: expirationTime * 60 * 1000,
+    });
+  }
   const result = {
     status: 200,
     shortUrl: key.split(":")[1],
     ...data,
   };
   response = new Response(JSON.stringify(result), { status: 200 });
-  enableCORS(response);
   return response;
 }
 
 const CLICKS_NAMESPACE = "clicks";
 
-function enableCORS(response) {
-  // Add CORS headers
-  response.headers.set("Access-Control-Allow-Origin", "*");
-  response.headers.set(
-    "Access-Control-Allow-Methods",
-    "GET, POST, PUT, DELETE"
-  );
-  response.headers.set("Access-Control-Allow-Headers", "Content-Type");
-}
 async function storeClickRecord(
   shortUrl,
   timestamp,
@@ -322,7 +322,6 @@ export async function handleRequest(event) {
       response = new Response("Invalid path because of conflict!", {
         status: 400,
       });
-      enableCORS(response);
       return response;
     }
     const value = await LINKS.get(shortUrl);
@@ -330,7 +329,6 @@ export async function handleRequest(event) {
       response = new Response(`Short URL ${shortUrl} already exists!`, {
         status: 400,
       });
-      enableCORS(response);
       return response;
     }
 
@@ -345,7 +343,6 @@ export async function handleRequest(event) {
     await LINKS.put(shortUrl, JSON.stringify(data));
 
     response = new Response(shortUrl, { status: 200 });
-    enableCORS(response);
     return response;
   }
 
@@ -357,9 +354,8 @@ export async function handleRequest(event) {
     }
     const params = await request.json();
     const { shortUrl } = params;
-    await LINKS.delete(shortUrl);
+    await LINKS.delete(`url:${shortUrl}`);
     const response = new Response(shortUrl, { status: 200 });
-    enableCORS(response);
     return response;
   }
 
@@ -380,7 +376,7 @@ export async function handleRequest(event) {
         if (value) {
           const data = JSON.parse(value);
           shortUrls.push({
-            shortUrl: key.name,
+            shortUrl: key.name.substring(4),
             longUrl: data.longUrl,
             expirationTime: data.expirationTime,
             requirePassword: data.requirePassword,
@@ -394,7 +390,6 @@ export async function handleRequest(event) {
       headers: { "Content-Type": "application/json" },
     });
 
-    enableCORS(response);
     return response;
   }
 }
