@@ -286,7 +286,9 @@ export async function handleRequest(event) {
           );
           // Handle password validation and redirection
           if (params.password && params.password === fullURLObj.password) {
-            event.waitUntil(addClickRecord(pathWithoutSlash, fullURLObj)); // Schedule click event recording in the background
+            if (RECORD_CLICKS) {
+              event.waitUntil(addClickRecord(pathWithoutSlash, fullURLObj)); // Schedule click event recording in the background
+            }
             response = new Response(
               JSON.stringify({ url: fullURLObj.longUrl }),
               {
@@ -300,8 +302,9 @@ export async function handleRequest(event) {
         }
       } else {
         console.log(`fullURLObj.longUrl is:${fullURLObj.longUrl}`);
-
-        event.waitUntil(addClickRecord(pathWithoutSlash, fullURLObj)); // Schedule click event recording in the background
+        if (RECORD_CLICKS) {
+          event.waitUntil(addClickRecord(pathWithoutSlash, fullURLObj)); // Schedule click event recording in the background
+        }
         response = Response.redirect(fullURLObj.longUrl, 301);
         return response;
       }

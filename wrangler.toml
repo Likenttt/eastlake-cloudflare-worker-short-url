@@ -13,4 +13,5 @@ USERNAME = "li2niu" # Change it
 PASSWORD = "li2niu" # Change it
 JWT_SECRET = "li2niu" # Change it
 DEFAULT_PAGE = "https://li2niu.com" # Change it
+RECORD_CLICKS = true
 
