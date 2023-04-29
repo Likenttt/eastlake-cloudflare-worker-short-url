@@ -88,117 +88,120 @@ export default function ShortUrlList({ shortUrls, setReloadShortUrls }) {
     const expirationDate = new Date(expirationTime);
     return expirationDate.toLocaleString();
   };
+
   return (
     <div className="mt-8">
       <h2 className="text-xl font-bold text-black mb-2">Short URL List</h2>
       {shortUrls && shortUrls.length > 0 ? (
-        <table className="table-auto w-full">
-          <thead>
-            <tr>
-              <th className="px-4 text-black py-2 text-center">Short URL</th>
-              <th className="px-4 text-black py-2 text-center">
-                Origin Long URL
-              </th>
-              <th className="px-4 text-black py-2 text-center">
-                Expiration Time
-              </th>
-              <th className="px-4 text-black py-2 text-center">Password</th>
-              <th className="px-4 text-black py-2 text-center">Clicks</th>
-              <th className="px-4 text-black py-2 text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {shortUrls.map(
-              (
-                { shortUrl, longUrl, expirationTime, password, clicks },
-                index
-              ) => (
-                <tr key={shortUrl}>
-                  <td className="border text-black px-4 py-2">
-                    {baseURL}/{shortUrl}
-                    <button
-                      type="button"
-                      className="ml-2 text-blue-500 hover:text-blue-700"
-                      onClick={() => handleCopy(`${baseURL}/${shortUrl}`)}
-                    >
-                      <FontAwesomeIcon icon={faCopy} />
-                    </button>
-                  </td>
-                  <td
-                    className="border text-black px-4 py-2 text-center relative cursor-pointer"
-                    onMouseEnter={() => {
-                      clearTimeout(tooltipTimeoutId); // Clear any existing timeout
-                      setIsTooltipVisible(true);
-                      setHoveredRowIndex(index);
-                    }}
-                    onMouseLeave={() => {
-                      setTooltipTimeoutId(
-                        setTimeout(() => {
-                          setIsTooltipVisible(false);
-                        }, 2000)
-                      );
-                      setHoveredRowIndex(null);
-                    }}
-                  >
-                    {truncateLongUrl(longUrl)}{" "}
-                    <button
-                      type="button"
-                      className="ml-2 text-blue-500 hover:text-blue-700"
-                      onClick={() => handleCopy(longUrl)}
-                    >
-                      <FontAwesomeIcon icon={faCopy} />
-                    </button>
-                    {hoveredRowIndex === index && (
-                      <span
-                        className={`tooltiptext ${
-                          isTooltipVisible
-                            ? "visible opacity-100"
-                            : "invisible opacity-0"
-                        } w-64 bg-gray-700 text-white text-center rounded-md p-2 absolute z-10 -bottom-24 left-1/2 transform -translate-x-1/2 transition-opacity duration-300`}
+        <div className="w-full max-h-64 overflow-auto">
+          <table className="table-auto w-full">
+            <thead>
+              <tr>
+                <th className="px-4 text-black py-2 text-center">Short URL</th>
+                <th className="px-4 text-black py-2 text-center">
+                  Origin Long URL
+                </th>
+                <th className="px-4 text-black py-2 text-center">
+                  Expiration Time
+                </th>
+                <th className="px-4 text-black py-2 text-center">Password</th>
+                <th className="px-4 text-black py-2 text-center">Clicks</th>
+                <th className="px-4 text-black py-2 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {shortUrls.map(
+                (
+                  { shortUrl, longUrl, expirationTime, password, clicks },
+                  index
+                ) => (
+                  <tr key={shortUrl}>
+                    <td className="border text-black px-4 py-2">
+                      {baseURL}/{shortUrl}
+                      <button
+                        type="button"
+                        className="ml-2 text-blue-500 hover:text-blue-700"
+                        onClick={() => handleCopy(`${baseURL}/${shortUrl}`)}
                       >
-                        <span>{longUrl}</span>
-                      </span>
-                    )}
-                  </td>
-
-                  <td className="border text-black px-4 py-2 text-center">
-                    {formatExpirationTime(expirationTime)}
-                  </td>
-                  <td className="border text-black px-4 py-2 text-center">
-                    {password ? password : "NONE"}
-                  </td>
-                  <td className="border text-black px-4 py-2 text-center">
-                    {clicks ? clicks : "0"}
-                  </td>
-                  <td className="border text-black px-4 py-2 flex justify-center items-center">
-                    <button
-                      type="button"
-                      className="text-blue-500 hover:text-blue-700 mr-2"
-                      onClick={() => handleViewClickHistory(shortUrl)}
+                        <FontAwesomeIcon icon={faCopy} />
+                      </button>
+                    </td>
+                    <td
+                      className="border text-black px-4 py-2 text-center relative cursor-pointer"
+                      onMouseEnter={() => {
+                        clearTimeout(tooltipTimeoutId); // Clear any existing timeout
+                        setIsTooltipVisible(true);
+                        setHoveredRowIndex(index);
+                      }}
+                      onMouseLeave={() => {
+                        setTooltipTimeoutId(
+                          setTimeout(() => {
+                            setIsTooltipVisible(false);
+                          }, 2000)
+                        );
+                        setHoveredRowIndex(null);
+                      }}
                     >
-                      <FontAwesomeIcon icon={faChartLine} />
-                    </button>
-
-                    <button
-                      type="button"
-                      className="text-red-500 hover:text-red-700"
-                      onClick={() => handleDelete(shortUrl)}
-                      disabled={loading === shortUrl} // Updated condition
-                    >
-                      {loading === shortUrl ? ( // Updated condition
-                        <span>
-                          <FontAwesomeIcon icon={faSpinner} spin />
+                      {truncateLongUrl(longUrl)}{" "}
+                      <button
+                        type="button"
+                        className="ml-2 text-blue-500 hover:text-blue-700"
+                        onClick={() => handleCopy(longUrl)}
+                      >
+                        <FontAwesomeIcon icon={faCopy} />
+                      </button>
+                      {hoveredRowIndex === index && (
+                        <span
+                          className={`tooltiptext ${
+                            isTooltipVisible
+                              ? "visible opacity-100"
+                              : "invisible opacity-0"
+                          } w-64 bg-gray-700 text-white text-center rounded-md p-2 absolute z-10 -bottom-24 left-1/2 transform -translate-x-1/2 transition-opacity duration-300`}
+                        >
+                          <span>{longUrl}</span>
                         </span>
-                      ) : (
-                        <FontAwesomeIcon icon={faTrashAlt} />
                       )}
-                    </button>
-                  </td>
-                </tr>
-              )
-            )}
-          </tbody>
-        </table>
+                    </td>
+
+                    <td className="border text-black px-4 py-2 text-center">
+                      {formatExpirationTime(expirationTime)}
+                    </td>
+                    <td className="border text-black px-4 py-2 text-center">
+                      {password ? password : "NONE"}
+                    </td>
+                    <td className="border text-black px-4 py-2 text-center">
+                      {clicks ? clicks : "0"}
+                    </td>
+                    <td className="border text-black px-4 py-2 flex justify-center items-center">
+                      <button
+                        type="button"
+                        className="text-blue-500 hover:text-blue-700 mr-2"
+                        onClick={() => handleViewClickHistory(shortUrl)}
+                      >
+                        <FontAwesomeIcon icon={faChartLine} />
+                      </button>
+
+                      <button
+                        type="button"
+                        className="text-red-500 hover:text-red-700"
+                        onClick={() => handleDelete(shortUrl)}
+                        disabled={loading === shortUrl} // Updated condition
+                      >
+                        {loading === shortUrl ? ( // Updated condition
+                          <span>
+                            <FontAwesomeIcon icon={faSpinner} spin />
+                          </span>
+                        ) : (
+                          <FontAwesomeIcon icon={faTrashAlt} />
+                        )}
+                      </button>
+                    </td>
+                  </tr>
+                )
+              )}
+            </tbody>
+          </table>
+        </div>
       ) : (
         <p className="text-black">No short URLs found.</p>
       )}
