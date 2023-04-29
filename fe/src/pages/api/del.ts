@@ -12,25 +12,18 @@ interface DelResponse {
 }
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  try {
-    const { method, body } = req;
+  const { method, body } = req;
 
-    if (method !== "POST") {
-      res.setHeader("Allow", ["POST"]);
-      res.status(405).end(`Method ${method} Not Allowed`);
-      return;
-    }
-
-    const response = await axios.post<DelResponse>(`${baseURL}/api/del`, body, {
-      withCredentials: true,
-    });
-    res
-      .status(200)
-      .json({ status: response.status, shortUrl: response.shortUrl });
-  } catch (error) {
-    console.error(error);
-    res.status(error.response?.status || 500).json({ message: error.message });
+  if (method !== "POST") {
+    res.setHeader("Allow", ["POST"]);
+    res.status(405).end(`Method ${method} Not Allowed`);
+    return;
   }
+
+  const response = await axios.post(`${baseURL}/api/del`, body, {
+    withCredentials: true,
+  });
+  res.status(200).json(response.data);
 };
 
 export default handler;

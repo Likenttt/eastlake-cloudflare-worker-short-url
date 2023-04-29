@@ -91,7 +91,7 @@ export default function ShortUrlList({ shortUrls, setReloadShortUrls }) {
   return (
     <div className="mt-8">
       <h2 className="text-xl font-bold text-black mb-2">Short URL List</h2>
-      {shortUrls.length > 0 ? (
+      {shortUrls && shortUrls.length > 0 ? (
         <table className="table-auto w-full">
           <thead>
             <tr>

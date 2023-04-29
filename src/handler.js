@@ -370,7 +370,10 @@ export async function handleRequest(event) {
     }
 
     await LINKS.delete(`url:${shortUrl}`);
-    const response = new Response({ shortUrl, status: 200 }, { status: 200 });
+    const response = new Response(
+      { data: { shortUrl, status: 200 } },
+      { status: 200 }
+    );
     return response;
   }
 
