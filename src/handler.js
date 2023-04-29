@@ -1,8 +1,9 @@
 import jwt from "@tsndr/cloudflare-worker-jwt";
 import { parse } from "cookie";
-
+import { askPasswordPageHtml, notFoundMessageHtml } from "./html";
 const invalidPaths = [
   "shorten",
+  "api",
   "login",
   "del",
   "edit",
@@ -128,6 +129,7 @@ async function handleShortenRequest(request) {
     password: params.password,
     shortUrlLength: length,
     longUrl: params.longUrl,
+    clicks: 0,
     id: params.id || generateUniqueKey(),
   };
   if (expirationTime === 0) {
@@ -146,90 +148,88 @@ async function handleShortenRequest(request) {
   return response;
 }
 
-const CLICKS_NAMESPACE = "clicks";
+const CLICKS_NAMESPACE = "clicks:";
 
-async function storeClickRecord(
-  shortUrl,
-  timestamp,
-  country,
-  referrer,
-  userAgent
-) {
-  const clickRecord = {
-    timestamp: timestamp,
-    country: country,
-    referrer: referrer,
-    userAgent: userAgent,
-  };
-  await LINKS.put(
-    CLICKS_NAMESPACE + ":" + shortUrl,
-    JSON.stringify(clickRecord)
-  );
-
-  // Update daily key
-  const dateStr = new Date(timestamp * 1000).toISOString().slice(0, 10);
-  await updateAggregateClickRecord(dateStr, shortUrl, clickRecord);
-
-  // Update monthly key
-  const monthStr = new Date(timestamp * 1000).toISOString().slice(0, 7);
-  await updateAggregateClickRecord(monthStr, shortUrl, clickRecord);
-
-  // Update yearly key
-  const yearStr = new Date(timestamp * 1000).toISOString().slice(0, 4);
-  await updateAggregateClickRecord(yearStr, shortUrl, clickRecord);
-}
-
-async function updateAggregateClickRecord(dateStr, shortUrl, clickRecord) {
-  const aggregateKey = CLICKS_NAMESPACE + ":" + dateStr;
-  const value = await LINKS.get(aggregateKey);
-  if (value) {
-    const aggregateRecord = JSON.parse(value);
-    if (aggregateRecord[shortUrl]) {
-      aggregateRecord[shortUrl].count += 1;
-      aggregateRecord[shortUrl].clicks.push(clickRecord);
-    } else {
-      aggregateRecord[shortUrl] = {
-        count: 1,
-        clicks: [clickRecord],
-      };
-    }
-    await LINKS.put(aggregateKey, JSON.stringify(aggregateRecord));
-  } else {
-    const aggregateRecord = {};
-    aggregateRecord[shortUrl] = {
-      count: 1,
-      clicks: [clickRecord],
-    };
-    await LINKS.put(aggregateKey, JSON.stringify(aggregateRecord));
+async function handleClickHistoryRequest(request) {
+  const params = await request.json();
+  const token = params.jwt;
+  const isValid = await jwt.verify(token, JWT_SECRET);
+  if (!isValid) {
+    return new Response("Invalid credentials! Need Login", { status: 401 });
   }
+  const { shortUrl, timeRange } = params;
+  const records = await getClickRecord(shortUrl, timeRange);
+  return new Response(JSON.stringify({ data: records }), {
+    headers: { "Content-Type": "application/json" },
+  });
 }
 
-async function getClickRecords(shortUrl) {
-  const value = await LINKS.get(CLICKS_NAMESPACE + shortUrl);
-  if (value === null) {
-    return [];
-  } else {
-    return JSON.parse(value);
+async function getClickRecord(shortUrl, timeRange) {
+  const date = new Date();
+  let key;
+
+  switch (timeRange) {
+    case "day":
+      key = `${shortUrl}:${date.getUTCFullYear()}-${
+        date.getUTCMonth() + 1
+      }-${date.getUTCDate()}`;
+      break;
+    case "month":
+      key = `${shortUrl}:${date.getUTCFullYear()}-${date.getUTCMonth() + 1}`;
+      break;
+    case "year":
+      key = `${shortUrl}:${date.getUTCFullYear()}`;
+      break;
+    default:
+      throw new Error("Invalid time range");
   }
+  console.log(`range key is: "${CLICKS_NAMESPACE + key}"`);
+  const value = await LINKS.get(CLICKS_NAMESPACE + key);
+  console.log(`click record is: ${value}`);
+  return value === null ? {} : JSON.parse(value);
 }
-async function addClickRecord(shortUrl, timestamp) {
-  const date = new Date(timestamp);
+
+async function addClickRecord(shortUrl, fullURLObj) {
+  if (fullURLObj.clicks === null) {
+    fullURLObj.clicks = 0;
+  } else {
+    fullURLObj.clicks++;
+  }
+  await LINKS.put(`url:${shortUrl}`, JSON.stringify(fullURLObj)); // Schedule click event recording in the background
+
+  const date = new Date();
+  const hourKey = `${date.getUTCFullYear()}-${
+    date.getUTCMonth() + 1
+  }-${date.getUTCDate()}-${date.getUTCHours()}`;
   const dayKey = `${shortUrl}:${date.getUTCFullYear()}-${
+    date.getUTCMonth() + 1
+  }-${date.getUTCDate()}`;
+  const dayKeyWithoutShortUrl = `${date.getUTCFullYear()}-${
     date.getUTCMonth() + 1
   }-${date.getUTCDate()}`;
   const monthKey = `${shortUrl}:${date.getUTCFullYear()}-${
     date.getUTCMonth() + 1
   }`;
+  const monthKeyWithoutShortUrl = `${date.getUTCFullYear()}-${
+    date.getUTCMonth() + 1
+  }`;
   const yearKey = `${shortUrl}:${date.getUTCFullYear()}`;
 
   const dayValue = await LINKS.get(CLICKS_NAMESPACE + dayKey);
-  const dayRecords = dayValue === null ? [] : JSON.parse(dayValue);
-  dayRecords.push(timestamp);
-  await LINKS.put(CLICKS_NAMESPACE + dayKey, JSON.stringify(dayRecords), {});
+  let dayRecords = dayValue === null ? {} : JSON.parse(dayValue);
+  dayRecords[hourKey] = (dayRecords[hourKey] || 0) + 1;
+  console.log(`dayRecords is:${dayRecords}`);
+
+  await LINKS.put(CLICKS_NAMESPACE + dayKey, JSON.stringify(dayRecords), {
+    expirationTtl: 3 * 24 * 60 * 60,
+  });
 
   const monthValue = await LINKS.get(CLICKS_NAMESPACE + monthKey);
-  const monthRecords = monthValue === null ? [] : JSON.parse(monthValue);
-  monthRecords.push(timestamp);
+  let monthRecords = monthValue === null ? {} : JSON.parse(monthValue);
+  monthRecords[dayKeyWithoutShortUrl] =
+    (monthRecords[dayKeyWithoutShortUrl] || 0) + 1;
+  console.log(`monthRecords is:${monthRecords}`);
+
   await LINKS.put(
     CLICKS_NAMESPACE + monthKey,
     JSON.stringify(monthRecords),
@@ -237,129 +237,10 @@ async function addClickRecord(shortUrl, timestamp) {
   );
 
   const yearValue = await LINKS.get(CLICKS_NAMESPACE + yearKey);
-  const yearRecords = yearValue === null ? [] : JSON.parse(yearValue);
-  yearRecords.push(timestamp);
+  let yearRecords = yearValue === null ? {} : JSON.parse(yearValue);
+  yearRecords[monthKeyWithoutShortUrl] =
+    (yearRecords[monthKeyWithoutShortUrl] || 0) + 1;
   await LINKS.put(CLICKS_NAMESPACE + yearKey, JSON.stringify(yearRecords), {});
-}
-function generatePasswordPage() {
-  return `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <title>Password Protected URL</title>
-        <style>
-          body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f3f4f6;
-          }
-          form {
-            background-color: #fff;
-            padding: 2rem;
-            border-radius: 5px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            width: 300px;
-          }
-          h1 {
-            margin-bottom: 1rem;
-            font-size: 1rem;
-          }
-          label {
-            display: block;
-            margin-bottom: 0.5rem;
-          }
-          .input-container {
-            position: relative;
-
-          }
-          input {
-            width: 100%;
-            padding: 0.5rem;
-            padding-right: 30px;
-            margin-bottom: 1rem;
-            border: 1px solid #ccc;
-            border-radius: 3px;
-            box-sizing: border-box;
-          }
-
-
-          .toggle-password {
-            position: absolute;
-            top: 30%;
-            right: 10px;
-            transform: translateY(-50%);
-            cursor: pointer;
-          }
-          button {
-            width: 100%;
-            padding: 0.5rem;
-            background-color: #3f51b5;
-            color: #fff;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-          }
-          button:hover {
-            background-color: #283593;
-          }
-          footer {
-            position: absolute;
-            bottom: 1rem;
-            text-align: center;
-            font-size: 0.8rem;
-          }
-        </style>
-      </head>
-      <body>
-        <form id="passwordForm">
-          <h1>Password Protected URL</h1>
-          <label for="password">Enter Password:</label>
-          <div class="input-container">
-            <input type="password" id="password" name="password" required>
-            <span class="toggle-password" onclick="togglePasswordVisibility()">
-            &#x1F441;
-            </span>
-          </div>
-          <button type="submit">Submit</button>
-        </form>
-        <footer>
-          Made by <a href="https://blog.li2niu.com" target="_blank" rel="noopener noreferrer">li2niu</a> with love in Wuhan, China
-        </footer>
-        <script>
-          function togglePasswordVisibility() {
-            const passwordInput = document.getElementById("password");
-            if (passwordInput.type === "password") {
-              passwordInput.type = "text";
-            } else {
-              passwordInput.type = "password";
-            }
-          }
-
-          document.getElementById("passwordForm").addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const password = document.getElementById("password").value;
-            const response = await fetch(window.location.pathname, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ password }),
-            });
-
-            if (response.status === 200) {
-              const { url } = await response.json();
-              window.location.href = url;
-            } else {
-              alert("Incorrect password. Please try again.");
-            }
-          });
-        </script>
-      </body>
-    </html>
-  `;
 }
 
 export async function handleRequest(event) {
@@ -376,9 +257,11 @@ export async function handleRequest(event) {
     return handleListRequest(request);
   } else if (path === "/api/edit") {
     return handleEditRequest(request);
+  } else if (path === "/api/history") {
+    return handleClickHistoryRequest(request);
   } else {
     if (path == "/") {
-      console.log("special redirect");
+      return Response.redirect(DEFAULT_PAGE, 301);
     }
     // Redirect the user to the full URL
     const pathWithoutSlash = path.substring(1);
@@ -393,7 +276,7 @@ export async function handleRequest(event) {
       if (fullURLObj.requirePassword) {
         // If the short URL requires a password, return the password page
         if (request.method === "GET") {
-          return new Response(generatePasswordPage(), {
+          return new Response(askPasswordPageHtml, {
             headers: { "Content-Type": "text/html" },
           });
         } else if (request.method === "POST") {
@@ -403,22 +286,30 @@ export async function handleRequest(event) {
           );
           // Handle password validation and redirection
           if (params.password && params.password === fullURLObj.password) {
-            // check if provided password matches
-            // event.waitUntil(addClickRecord(path, timestamp)); // Schedule click event recording in the background
-            return new Response(JSON.stringify({ url: fullURLObj.longUrl }), {
-              headers: { "Content-Type": "application/json" },
-            });
+            event.waitUntil(addClickRecord(pathWithoutSlash, fullURLObj)); // Schedule click event recording in the background
+            response = new Response(
+              JSON.stringify({ url: fullURLObj.longUrl }),
+              {
+                headers: { "Content-Type": "application/json" },
+              }
+            );
+            return response;
           } else {
             return new Response("Incorrect password", { status: 401 });
           }
         }
       } else {
         console.log(`fullURLObj.longUrl is:${fullURLObj.longUrl}`);
-        return Response.redirect(fullURLObj.longUrl, 301);
-        // event.waitUntil(addClickRecord(path, timestamp)); // Schedule click event recording in the background
+
+        event.waitUntil(addClickRecord(pathWithoutSlash, fullURLObj)); // Schedule click event recording in the background
+        response = Response.redirect(fullURLObj.longUrl, 301);
+        return response;
       }
     } else {
-      return new Response("NOT FOUND!", { status: 404 });
+      return new Response(notFoundMessageHtml, {
+        status: 404,
+        headers: { "Content-Type": "text/html" },
+      });
     }
   }
 
@@ -503,6 +394,7 @@ export async function handleRequest(event) {
             expirationTime: data.expirationTime,
             requirePassword: data.requirePassword,
             password: data.password,
+            clicks: data.clicks,
           });
         }
       }
