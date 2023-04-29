@@ -32,7 +32,9 @@ export default function Shorten() {
   const [shortUrls, setShortUrls] = useState([]);
   const [oldShortUrl, setOldShortUrl] = useState("");
   function handleCopyClick() {
-    navigator.clipboard.writeText(`${baseURL}/${shortUrl}`);
+    navigator.clipboard.writeText(
+      `${process.env.CLOUDFLARE_WORKER_BASE_URL}/${shortUrl}`
+    );
   }
   useEffect(() => {
     const jwtCookie = document.cookie
@@ -101,7 +103,7 @@ export default function Shorten() {
       setShortUrl(response.shortUrl);
       setOldShortUrl(response.shortUrl);
       setInfo(
-        `Url ${trimmedUrl} has been shorten to ${baseURL}/${response.shortUrl}`
+        `Url ${trimmedUrl} has been shorten to ${process.env.CLOUDFLARE_WORKER_BASE_URL}/${response.shortUrl}`
       );
       setLongUrl(response.longUrl);
       setShortUrlLength(response.shortUrlLength);

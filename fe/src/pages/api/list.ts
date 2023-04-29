@@ -16,9 +16,13 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     return;
   }
 
-  const response = await axios.post(`${baseURL}/api/list`, body, {
-    withCredentials: true,
-  });
+  const response = await axios.post(
+    `${process.env.CLOUDFLARE_WORKER_BASE_URL}/api/list`,
+    body,
+    {
+      withCredentials: true,
+    }
+  );
   res.status(200).json(response.data);
 };
 

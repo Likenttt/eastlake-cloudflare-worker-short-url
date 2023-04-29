@@ -1,13 +1,29 @@
-# A short url system based on cloudflare workers
+# East Lake short url system based on cloudflare workers(as the backend server) & Vercel(as the admin)
 
-Server side
+## Experience it https://cf-url-admin.li2niu.com/
+
+- username: li2niu
+- password: li2niu
+  Don't delete the data that has many clicks :)
+
+## Short Url Examples:
+
+- https://u.li2niu.com/468
+- https://u.li2niu.com/tcK
+- https://u.li2niu.com/666 (For 404)
+
+## File Archtecture
+
+Server side(root dir)
 
 - [ x ] A page with authentication used to create short urls
-- [ ] Correctly and swiftly redirect a short url to its destination
-- [ ] Monitor the click history for per links
-- [ ] Expiration time for short urls
-- [ ] Redirect merely after authentication passed
-- [ ]
+- [ x ] Correctly and swiftly redirect a short url to its destination
+- [ x ] Monitor the click history for per links
+- [ x ] Expiration time for short urls
+- [ x ] Redirect merely after authentication passed
+- [ x ]
+
+CLient Side Admin(/fe)
 
 ## Quick Start
 

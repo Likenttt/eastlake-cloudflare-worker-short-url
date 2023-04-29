@@ -20,9 +20,13 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     return;
   }
 
-  const response = await axios.post<DelResponse>(`${baseURL}/api/del`, body, {
-    withCredentials: true,
-  });
+  const response = await axios.post<DelResponse>(
+    `${process.env.CLOUDFLARE_WORKER_BASE_URL}/api/del`,
+    body,
+    {
+      withCredentials: true,
+    }
+  );
   res.status(200).json(response.data);
 };
 

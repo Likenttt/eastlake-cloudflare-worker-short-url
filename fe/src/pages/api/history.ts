@@ -15,9 +15,13 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     res.status(405).end(`Method ${method} Not Allowed`);
     return;
   }
-  const response = await axios.post(`${baseURL}/api/history`, body, {
-    withCredentials: true,
-  });
+  const response = await axios.post(
+    `${process.env.CLOUDFLARE_WORKER_BASE_URL}/api/history`,
+    body,
+    {
+      withCredentials: true,
+    }
+  );
   res.status(200).json(response.data);
 };
 

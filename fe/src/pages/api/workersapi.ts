@@ -9,7 +9,9 @@ const api = axios.create({
 });
 
 export const login = async (postData: any) => {
-  console.log(`CLOUDFLARE_WORKER_BASE_URL: ${baseURL}`);
+  console.log(
+    `CLOUDFLARE_WORKER_BASE_URL: ${process.env.CLOUDFLARE_WORKER_BASE_URL}`
+  );
   const response = await api.post("/api/login", postData);
   return response.data;
 };
