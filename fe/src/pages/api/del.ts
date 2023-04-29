@@ -23,7 +23,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const response = await axios.post(`${baseURL}/api/del`, body, {
     withCredentials: true,
   });
-  res.status(200).json(response.data);
+  res
+    .status(200)
+    .json({ shortUrl: response.shortUrl, status: response.status });
 };
 
 export default handler;
