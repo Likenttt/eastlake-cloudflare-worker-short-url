@@ -16,11 +16,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       res.status(405).end(`Method ${method} Not Allowed`);
       return;
     }
-    console.log(`body is:${JSON.stringify(body)}`);
     const response = await axios.post(`${baseURL}/api/history`, body, {
       withCredentials: true,
     });
-    console.log(`response is:${JSON.stringify(response.data.data)}`);
     res.status(200).json(response.data);
   } catch (error) {
     console.error(error);

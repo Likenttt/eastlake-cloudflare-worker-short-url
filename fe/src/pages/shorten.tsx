@@ -6,6 +6,8 @@ import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 import { faCopy } from "@fortawesome/free-solid-svg-icons";
 import ShortUrlList from "./components/ShortUrlList";
 import getConfig from "next/config";
+import Footer from "./components/Footer";
+import ForkMeBadge from "./components/ForkMeBadge";
 
 const { publicRuntimeConfig } = getConfig();
 const baseURL = publicRuntimeConfig.CLOUDFLARE_WORKER_BASE_URL;
@@ -47,7 +49,7 @@ export default function Shorten() {
       };
       loadShortUrls();
     } else {
-      window.location.href = "/login";
+      window.location.href = "/index";
     }
   }, [reloadShortUrls]); // Only run once on component mount
 
@@ -119,6 +121,7 @@ export default function Shorten() {
 
   return (
     <div className="mt-8 flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
+      <ForkMeBadge />
       {error && (
         <div className="my-4 p-2 rounded-lg bg-red-100 text-red-800">
           {error}
@@ -296,11 +299,11 @@ export default function Shorten() {
           )}
         </div>
       </form>
-
       <ShortUrlList
         shortUrls={shortUrls}
         setReloadShortUrls={setReloadShortUrls}
       />
+      <Footer />
     </div>
   );
 }

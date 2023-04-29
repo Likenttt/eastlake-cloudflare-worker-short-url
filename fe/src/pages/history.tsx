@@ -3,6 +3,8 @@ import { useRouter } from "next/router";
 import { history } from "./api/workersapi";
 import ReactECharts from "echarts-for-react";
 import getConfig from "next/config";
+import Footer from "./components/Footer";
+import ForkMeBadge from "./components/ForkMeBadge";
 
 const { publicRuntimeConfig } = getConfig();
 const baseURL = publicRuntimeConfig.CLOUDFLARE_WORKER_BASE_URL;
@@ -53,7 +55,9 @@ export default function ClickHistory() {
       fetchClickHistory(jwt, shortUrl);
     }
   }, [shortUrl, jwt]);
-
+  const goBack = () => {
+    router.back();
+  };
   const handleTimeRangeChange = (e) => {
     setTimeRange(e.target.value);
   };
@@ -130,27 +134,33 @@ export default function ClickHistory() {
 
   return (
     <div className="mt-8 flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
+      <ForkMeBadge />{" "}
       <h1 className="text-3xl font-bold text-gray-700 mb-8">
         Click History for {baseURL}/{shortUrl}
       </h1>
       <div className="w-full max-w-lg p-4 bg-white rounded-lg shadow-md">
-        <div className="mb-4">
-          <label
-            htmlFor="timeRange"
-            className="block text-gray-700 font-bold mb-2"
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center">
+            <label htmlFor="timeRange" className="text-gray-700 font-bold mr-2">
+              Time Range:
+            </label>
+            <select
+              id="timeRange"
+              value={timeRange}
+              onChange={handleTimeRangeChange}
+              className="border border-gray-300 rounded p-2 text-black"
+            >
+              <option value="day">Day</option>
+              <option value="month">Month</option>
+              <option value="year">Year</option>
+            </select>
+          </div>
+          <button
+            onClick={goBack}
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
           >
-            Time Range:
-          </label>
-          <select
-            id="timeRange"
-            value={timeRange}
-            onChange={handleTimeRangeChange}
-            className="border border-gray-300 rounded p-2 text-black"
-          >
-            <option value="day">Day</option>
-            <option value="month">Month</option>
-            <option value="year">Year</option>
-          </select>
+            Back
+          </button>
         </div>
         {Object.keys(currentOption).length > 0 ? (
           <ReactECharts option={currentOption} style={{ height: "400px" }} />
@@ -160,6 +170,7 @@ export default function ClickHistory() {
           </div>
         )}
       </div>
+      <Footer />
     </div>
   );
 }

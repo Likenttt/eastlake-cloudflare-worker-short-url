@@ -4,6 +4,9 @@ const nextConfig = {
   publicRuntimeConfig: {
     CLOUDFLARE_WORKER_BASE_URL: process.env.CLOUDFLARE_WORKER_BASE_URL,
   },
+  images: {
+    domains: ["github.blog"],
+  },
 };
 
 module.exports = nextConfig;

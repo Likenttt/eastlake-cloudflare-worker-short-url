@@ -36,7 +36,7 @@ export default function ShortUrlList({ shortUrls, setReloadShortUrls }) {
       const jwt = jwtCookie.split("=")[1];
       setJwt(jwt);
     } else {
-      window.location.href = "/login";
+      window.location.href = "/index";
     }
   }, []); // Only run once on component mount
   const truncateLongUrl = (longUrl) => {
