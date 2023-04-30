@@ -44,7 +44,7 @@ async function handleLogin(request) {
       status: 200,
       headers: {
         "Content-Type": "application/json",
-        "Set-Cookie": `jwt=${token}; Secure; SameSite=None; Path=/; Expires=${expirationString}`,
+        "Set-Cookie": `jwt=${token}; SameSite=None; Path=/; Expires=${expirationString}`,
       },
     });
   } else {

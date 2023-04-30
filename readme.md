@@ -1,4 +1,4 @@
-# East Lake short url system based on cloudflare workers(as the backend server) & Vercel(as the admin)
+# East Lake short url system based on cloudflare workers(as the backend server) & Vercel(as the admin)[WIP]
 
 ## Experience it https://cf-url-admin.li2niu.com/
 

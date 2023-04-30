@@ -16,6 +16,7 @@ export default function Home() {
       .split(";")
       .find((cookie) => cookie.startsWith("jwt="));
 
+    console.log(`document.cookie is:${document.cookie}`);
     console.log(`jwtCookie is:${jwtCookie}`);
 
     if (jwtCookie) {
