@@ -15,8 +15,9 @@ export default function Home() {
     const jwtCookie = document.cookie
       .split(";")
       .find((cookie) => cookie.startsWith("jwt="));
+
     if (jwtCookie) {
-      const token = jwtCookie.split("=")[1];
+      const jwt = jwtCookie.split("=")[1];
       window.location.href = "/shorten";
     }
   }, []);
@@ -26,14 +27,14 @@ export default function Home() {
 
     try {
       const response = await login({ username, password });
-      const { token, exp } = response;
-      // Convert exp (in seconds) to a date object
-      const expirationDate = new Date(exp * 1000);
-      // Add exp as expiration time to the cookie
-      document.cookie = `jwt=${token}; path=/; expires=${expirationDate.toUTCString()}`;
-      window.location.href = "/shorten";
+
+      console.log(`login res:${JSON.stringify(response)}`);
+      console.log(`login res status:${response.status === 200}`);
+      if (response.status === 200) {
+        window.location.href = "/shorten";
+      }
     } catch (error) {
-      alert(`Invalid credentials:${error.response}`); // error message is in response.data
+      alert(`Invalid credentials: ${JSON.stringify(error.response)}`); // error message is in response.data
     }
   };
 

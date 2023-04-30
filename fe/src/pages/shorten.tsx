@@ -36,6 +36,8 @@ export default function Shorten() {
       `${process.env.CLOUDFLARE_WORKER_BASE_URL}/${shortUrl}`
     );
   }
+
+
   useEffect(() => {
     const jwtCookie = document.cookie
       .split(";")
@@ -103,7 +105,7 @@ export default function Shorten() {
       setShortUrl(response.shortUrl);
       setOldShortUrl(response.shortUrl);
       setInfo(
-        `Url ${trimmedUrl} has been shorten to ${process.env.CLOUDFLARE_WORKER_BASE_URL}/${response.shortUrl}`
+        `Url ${trimmedUrl} has been shorten to ${baseURL}/${response.shortUrl}`
       );
       setLongUrl(response.longUrl);
       setShortUrlLength(response.shortUrlLength);

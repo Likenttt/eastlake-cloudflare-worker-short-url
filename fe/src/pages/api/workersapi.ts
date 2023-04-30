@@ -9,15 +9,13 @@ const api = axios.create({
 });
 
 export const login = async (postData: any) => {
-  console.log(
-    `CLOUDFLARE_WORKER_BASE_URL: ${process.env.CLOUDFLARE_WORKER_BASE_URL}`
-  );
   const response = await api.post("/api/login", postData);
-  return response.data;
+  return response;
 };
 
 export const shorten = async (postData: any) => {
   const response = await api.post("/api/shorten", postData);
+
   return response.data;
 };
 export const list = async (postData: any) => {

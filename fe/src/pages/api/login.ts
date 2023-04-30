@@ -23,6 +23,17 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       withCredentials: true,
     }
   );
+  console.log(`response.headers in /api: ${JSON.stringify(response.headers)}`);
+  // Copy headers
+  const headersToCopy = ["Set-Cookie"];
+  headersToCopy.forEach((header) => {
+    const headerValue = response.headers[header.toLowerCase()];
+    if (headerValue) {
+      console.log(`header: ${headerValue}`);
+      res.setHeader(header, headerValue);
+    }
+  });
+
   res.status(200).json(response.data);
 };
 

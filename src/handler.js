@@ -32,15 +32,20 @@ async function handleLogin(request) {
       JWT_SECRET
     );
 
-    // Store the JWT token in the KV namespace
-    await LINKS.put(`jwt:${username}`, token, {
-      expirationTtl: 60 * 60 * expireHour,
-    });
+    // // Store the JWT token in the KV namespace
+    // await LINKS.put(`jwt:${username}`, token, {
+    //   expirationTtl: 60 * 60 * expireHour,
+    // });
+    const expirationDate = new Date(expireTime * 1000);
+    const expirationString = expirationDate.toUTCString();
 
     // Return the JWT token to the client
-    response = new Response(JSON.stringify({ token, exp: expireTime }), {
+    response = new Response(JSON.stringify({}), {
       status: 200,
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Set-Cookie": `jwt=${token}; Secure; SameSite=None; Path=/; Expires=${expirationString}`,
+      },
     });
   } else {
     response = new Response("Invalid credentials", { status: 401 });

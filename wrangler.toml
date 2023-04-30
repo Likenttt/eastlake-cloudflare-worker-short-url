@@ -5,13 +5,15 @@ node_compat = true
 
 [[kv_namespaces]]
 binding = "LINKS"
-id = "7f0bf9809c464f51871b753cdda2c124"
+id = "7f0bf9809c464f51871b753cdda2c124" ## Change it to yours
 [build]
 command = "npm run build"
 [vars]
-USERNAME = "li2niu" # Change it
-PASSWORD = "li2niu" # Change it
-JWT_SECRET = "li2niu" # Change it
+USERNAME = "li2niu" # Change it and don't expose it in this file
+PASSWORD = "li2niu" # Change it and don't expose it in this file
+JWT_SECRET = "li2niu" # Change it and don't expose it in this file
 DEFAULT_PAGE = "https://li2niu.com" # Change it
 RECORD_CLICKS = true
+
+
 

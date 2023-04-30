@@ -30,7 +30,16 @@ CLient Side Admin(/fe)
 ### Part One (Server Side)
 
 1. Clone this repo to your local
-2. Initialize your Cloudflare KV space and environment variables(USERNAME/PASSWORD/JWT_SECRET)
+2. Initialize your Cloudflare KV space and environment variables
+
+```
+USERNAME = "li2niu" # Change it
+PASSWORD = "li2niu" # Change it
+JWT_SECRET = "li2niu" # Change it
+DEFAULT_PAGE = "https://li2niu.com" # Change it
+RECORD_CLICKS = true
+```
+
 3. Initialize wrangler config
 4. Deploy
 5. Create your short url in Cloudflare kv namespace.
