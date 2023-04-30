@@ -16,6 +16,8 @@ export default function Home() {
       .split(";")
       .find((cookie) => cookie.startsWith("jwt="));
 
+    console.log(`jwtCookie is:${jwtCookie}`);
+
     if (jwtCookie) {
       const jwt = jwtCookie.split("=")[1];
       window.location.href = "/shorten";
