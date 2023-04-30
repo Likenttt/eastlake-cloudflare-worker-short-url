@@ -44,7 +44,9 @@ async function handleLogin(request) {
       status: 200,
       headers: {
         "Content-Type": "application/json",
-        "Set-Cookie": `jwt=${token}; SameSite=None; Path=/; Expires=${expirationString}`,
+        "Set-Cookie": `jwt=${token}; SameSite=None; Secure; Path=/; Expires=${expirationString}`,
+        "Access-Control-Allow-Origin": `${FE_ADMIN_DOMAIN}`,
+        "Access-Control-Allow-Credentials": "true",
       },
     });
   } else {

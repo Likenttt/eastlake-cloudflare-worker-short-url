@@ -10,10 +10,10 @@ export default function Home() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-
   useEffect(() => {
     const jwtCookie = document.cookie
       .split(";")
+      .map((cookie) => cookie.trim()) // Add this line to trim each cookie string
       .find((cookie) => cookie.startsWith("jwt="));
 
     console.log(`document.cookie is:${document.cookie}`);
