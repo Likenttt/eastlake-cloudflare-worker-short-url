@@ -37,11 +37,14 @@ export default function Shorten() {
     );
   }
 
-
   useEffect(() => {
     const jwtCookie = document.cookie
       .split(";")
+      .map((cookie) => cookie.trim()) // Add this line to trim each cookie string
       .find((cookie) => cookie.startsWith("jwt="));
+
+    console.log(`document.cookie is:${document.cookie}`);
+    console.log(`jwtCookie is:${jwtCookie}`);
 
     if (jwtCookie) {
       const jwt = jwtCookie.split("=")[1];
