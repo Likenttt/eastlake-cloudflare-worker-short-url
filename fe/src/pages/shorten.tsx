@@ -43,8 +43,8 @@ export default function Shorten() {
       .map((cookie) => cookie.trim()) // Add this line to trim each cookie string
       .find((cookie) => cookie.startsWith("jwt="));
 
-    console.log(`document.cookie is:${document.cookie}`);
-    console.log(`jwtCookie is:${jwtCookie}`);
+    console.log(`document.cookie in /shorten page is:${document.cookie}`);
+    console.log(`jwtCookie in /shorten page is:${jwtCookie}`);
 
     if (jwtCookie) {
       const jwt = jwtCookie.split("=")[1];

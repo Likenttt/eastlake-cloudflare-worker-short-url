@@ -121,11 +121,7 @@ export default function ShortUrlList({ shortUrls, setReloadShortUrls }) {
                       <button
                         type="button"
                         className="ml-2 text-blue-500 hover:text-blue-700"
-                        onClick={() =>
-                          handleCopy(
-                            `${process.env.CLOUDFLARE_WORKER_BASE_URL}/${shortUrl}`
-                          )
-                        }
+                        onClick={() => handleCopy(`${baseURL}/${shortUrl}`)}
                       >
                         <FontAwesomeIcon icon={faCopy} />
                       </button>
