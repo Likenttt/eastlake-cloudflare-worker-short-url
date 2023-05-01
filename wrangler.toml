@@ -12,8 +12,8 @@ command = "npm run build"
 USERNAME = "li2niu" # Change it and don't expose it in this file
 PASSWORD = "li2niu" # Change it and don't expose it in this file
 JWT_SECRET = "li2niu" # Change it and don't expose it in this file
-DEFAULT_PAGE = "https://li2niu.com" # Change it
+DEFAULT_PAGE = "https://blog.li2niu.com" # Change it
 RECORD_CLICKS = true
-FE_ADMIN_DOMAIN = "https://cf-url-admin.li2niu.com" #Remember to replace it with your admin domain 
+FE_ADMIN_DOMAIN = "https://cf-url-admin.li2niu.com" #Remember to replace it with your admin domain, important for cross origin allowlist
 
 
