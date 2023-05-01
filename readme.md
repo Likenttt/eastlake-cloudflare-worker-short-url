@@ -3,11 +3,13 @@
 Based on Cloudflare Workers & Vercel
 
 [🇨🇳 简体中文](./readme-zhCN.md)
+
 **Try it now:** https://cf-url-admin.li2niu.com/
 
 - Username: li2niu
 - Password: li2niu
-  _Please don't delete data with many clicks. We believe you won't._
+
+_Please don't delete data with many clicks. We believe you won't._
 
 ## Short URL Examples:
 
@@ -139,3 +141,4 @@ Vercel has limits for free users, but it is unlikely to be easily overused.
 
 - Vercel
 - GPT-4
+- Cloudflare
