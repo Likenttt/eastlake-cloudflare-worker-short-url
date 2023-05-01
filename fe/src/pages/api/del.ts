@@ -6,10 +6,6 @@ import getConfig from "next/config";
 
 const { publicRuntimeConfig } = getConfig();
 const baseURL = publicRuntimeConfig.CLOUDFLARE_WORKER_BASE_URL;
-interface DelResponse {
-  status: string;
-  shortUrl: string;
-}
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { method, body } = req;
@@ -20,7 +16,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     return;
   }
 
-  const response = await axios.post<DelResponse>(
+  const response = await axios.post<>(
     `${process.env.CLOUDFLARE_WORKER_BASE_URL}/api/del`,
     body,
     {

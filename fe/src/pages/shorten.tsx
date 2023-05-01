@@ -32,9 +32,7 @@ export default function Shorten() {
   const [shortUrls, setShortUrls] = useState([]);
   const [oldShortUrl, setOldShortUrl] = useState("");
   function handleCopyClick() {
-    navigator.clipboard.writeText(
-      `${process.env.CLOUDFLARE_WORKER_BASE_URL}/${shortUrl}`
-    );
+    navigator.clipboard.writeText(`${baseURL}/${shortUrl}`);
   }
 
   useEffect(() => {
