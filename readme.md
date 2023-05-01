@@ -1,12 +1,12 @@
-# East Lake short url system based on Cloudflare workers & Vercel [WIP]
+# East Lake Short URL System: Cloudflare Workers & Vercel [WIP]
 
-## Experience it now https://cf-url-admin.li2niu.com/
+**Try it now:** https://cf-url-admin.li2niu.com/
 
-- username: li2niu
-- password: li2niu
-  Don't delete the data that has many clicks :) I believe you won't
+- Username: li2niu
+- Password: li2niu
+  _Please don't delete data with many clicks. We believe you won't._
 
-## Short Url Examples:
+## Short URL Examples:
 
 - https://u.li2niu.com/468
 - https://u.li2niu.com/tcK
@@ -22,36 +22,37 @@
 
 ## Features
 
-### Frontend Admin(Nextjs Project deployed on Vercel, source in /fe)
+### Frontend Admin (Next.js Project deployed on Vercel, source in /fe)
 
-- [ x ] Login page,get credentials to proceed.
-- [ x ] Shorten page, create short urls.
-- [ x ] List page, display short urls in a table.
-- [ x ] History page, view the click history for a specific short url.
+- [x] Login page: get credentials to proceed.
+- [x] Shorten page: create short URLs.
+- [x] List page: display short URLs in a table.
+- [x] History page: view the click history for a specific short URL.
 
-### Backend Server(Cloudflare Worker, source in root directory)
+### Backend Server (Cloudflare Worker, source in root directory)
 
-- [ x ] Correctly and swiftly redirect a short url to its original long url
-- [ x ] Monitor the click history for per link(Optional,note that if turned on,it will consume a lot write/read times for cloudflare kv. If you are in a paid plan, forget it because of the unlimited read/write times. But you must keep in mind the kv is designed more for read rather than write, in which case inconsitency may exist.)
-- [ x ] Expiration time supported
-- [ x ] Password protected supported
-- [ x ] 404 not found fallback page
+- [x] Correctly and swiftly redirect a short URL to its original long URL.
+- [x] Monitor click history per link (optional; note that if enabled, it will consume many read/write times for Cloudflare KV. If you are on a paid plan, forget it because of the unlimited read/write times. But keep in mind that KV is designed more for read rather than write, so inconsistency may exist).
+- [x] Expiration time supported.
+- [x] Password protection supported.
+- [x] 404 Not Found fallback page.
 
-## Prequisitions
+## Prerequisites
 
-You must have
+You must have:
 
 1. A Vercel account.
 2. A Cloudflare account.
-3. A domain. The shorter the better. If the domain is managed by Cloudflare, later operations would be much easier.
+3. A domain (the shorter, the better). If the domain is managed by Cloudflare, later operations will be much easier.
 
 ## Deployment
 
-Fork this repo and clone it to your local machine, then start deployment.
+Fork this repo and clone it to your local machine. Then start the deployment process.
 
 ### Frontend Admin
 
-The Frontend code is in /fe, which is a Nextjs project. Vercel is highly recommended.
+The frontend code is in /fe, which is a Next.js project. Vercel is highly recommended.
+
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FLikenttt%2Fcloudflare-worker-short-url&env=CLOUDFLARE_WORKER_BASE_URL&envDescription=The%20base%20url%20you%20want%20to%20use%20for%20your%20short%20url.%20&project-name=cloudflare-worker-short-url&repository-name=cloudflare-worker-short-url&demo-title=li2niu-cloudflare-worker-short-url&demo-url=https%3A%2F%2Fcf-url-admin.li2niu.com)
 
 ![Add the env variable as shorturl also backend server endpoint](images/add-cf-base-url-env.jpg)
@@ -62,7 +63,7 @@ The Frontend code is in /fe, which is a Nextjs project. Vercel is highly recomme
 
 #### Initialize Cloudflare KV namespace
 
-Fill in the kv namespace id in `wrangler.toml` below. It is not necessary to name your namespace `LINKS` because it is just a global variable exposed to worker.
+Fill in the KV namespace ID in `wrangler.toml` below. It is not necessary to name your namespace `LINKS` because it is just a global variable exposed to the worker.
 
 ```
 [[kv_namespaces]]
@@ -88,7 +89,7 @@ PASSWORD = "li2niu" # Change it and don't expose it in this file
 JWT_SECRET = "li2niu" # Change it and don't expose it in this file
 DEFAULT_PAGE = "https://blog.li2niu.com" # Change it
 RECORD_CLICKS = true
-FE_ADMIN_DOMAIN = "https://cf-url-admin.li2niu.com" #Remember to replace it with your admin domain, important for cross origin allowlist
+FE_ADMIN_DOMAIN = "https://cf-url-admin.li2niu.com" # Replace it with your admin domain, important for cross-origin allowlist
 
 ```
 
@@ -98,7 +99,7 @@ FE_ADMIN_DOMAIN = "https://cf-url-admin.li2niu.com" #Remember to replace it with
 git clone yourrepo
 ```
 
-#### Install wrangler cli locally and log in cloudflare.
+#### Install Wrangler CLI Locally and Log in to Cloudflare
 
 ```
 npm install -g wrangler
@@ -111,27 +112,27 @@ wrangler login
 wrangler publish
 ```
 
-Then create your short url in Fe amdin. Have fun~
+Create your short URL in the frontend admin. Enjoy!
 
 ### Notices
 
 #### Security
 
-Please use a long username and password that not easily guessed for security concern. Besides, use a complex JWT secret.
+Use a long, difficult-to-guess username, password, and JWT secret for security.
 
-#### Cloudflare free plan limits
+#### Cloudflare Free Plan Limits
 
-Cloudflare free plan has [limits](https://developers.cloudflare.com/workers/platform/limits/#kv-limits) for kv. Especially for the write times. Even in paid plan, the write speed for same key is limited to 1 time/second, in which case the click times may not accurate in high cocurrency. If you are in **free plan**, click history is not recommended.
+Cloudflare free plan has [limits](https://developers.cloudflare.com/workers/platform/limits/#kv-limits) for KV, especially write times. Even in a paid plan, the write speed for the same key is limited to 1 time/second, potentially causing inaccuracies in high concurrency. Click history is not recommended for **free plan** users.
 
-#### Vercel limits
+#### Vercel Limits
 
-Vercel has limits for free users as well. But I don't think it is easily overused.
+Vercel has limits for free users, but it is unlikely to be easily overused.
 
-### Buy me coffee
+### Support the Project
 
 <a href="https://www.buymeacoffee.com/lichuanyi" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
 
-### Credit
+### Credits
 
 - Vercel
 - GPT-4
