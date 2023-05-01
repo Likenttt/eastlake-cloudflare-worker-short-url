@@ -1,5 +1,8 @@
-# East Lake Short URL System: Cloudflare Workers & Vercel [WIP]
+# East Lake Short URL System
 
+Based on Cloudflare Workers & Vercel
+
+[🇨🇳 简体中文](./readme-zhCN.md)
 **Try it now:** https://cf-url-admin.li2niu.com/
 
 - Username: li2niu
