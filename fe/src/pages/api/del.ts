@@ -16,7 +16,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     return;
   }
 
-  const response = await axios.post<>(
+  const response = await axios.post(
     `${process.env.CLOUDFLARE_WORKER_BASE_URL}/api/del`,
     body,
     {
