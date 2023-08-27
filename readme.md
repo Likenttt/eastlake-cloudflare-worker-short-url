@@ -13,7 +13,6 @@ _Please don't delete data with many clicks. We believe you won't._
 
 ## Short URL Examples:
 
-- https://u.li2niu.com/468
 - https://u.li2niu.com/tcK
 - https://u.li2niu.com/666 (For 404)
 
