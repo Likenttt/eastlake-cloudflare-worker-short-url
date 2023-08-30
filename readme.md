@@ -141,3 +141,8 @@ Vercel has limits for free users, but it is unlikely to be easily overused.
 - Vercel
 - GPT-4
 - Cloudflare
+
+### Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=Likenttt/eastlake-cloudflare-worker-short-url&type=Date)](https://star-history.com/#Likenttt/eastlake-cloudflare-worker-short-url&Date)
+
