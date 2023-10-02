@@ -59,6 +59,12 @@ The frontend code is in /fe, which is a Next.js project. Vercel is highly recomm
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FLikenttt%2Fcloudflare-worker-short-url&env=CLOUDFLARE_WORKER_BASE_URL&envDescription=The%20base%20url%20you%20want%20to%20use%20for%20your%20short%20url.%20&project-name=cloudflare-worker-short-url&repository-name=cloudflare-worker-short-url&demo-title=li2niu-cloudflare-worker-short-url&demo-url=https%3A%2F%2Fcf-url-admin.li2niu.com)
 
+If you want google analytics, remember to add the following env **NEXT_PUBLIC_GA_MEASUREMENT_ID=< your ga4 key e.g G-xxxxxxxxxx>**
+
+```
+NEXT_PUBLIC_GA_MEASUREMENT_ID=G-xxxxxxxxxx
+```
+
 ![Add the env variable as shorturl also backend server endpoint](images/add-cf-base-url-env.jpg)
 ![Change the default root](./images/change-nextjs-project-root-2-fe.jpg)
 ![Redeployment](./images/redeployment.jpg)
@@ -145,4 +151,3 @@ Vercel has limits for free users, but it is unlikely to be easily overused.
 ### Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=Likenttt/eastlake-cloudflare-worker-short-url&type=Date)](https://star-history.com/#Likenttt/eastlake-cloudflare-worker-short-url&Date)
-
