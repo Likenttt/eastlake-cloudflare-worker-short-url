@@ -13,7 +13,6 @@ _Please don't delete data with many clicks. We believe you won't._
 
 ## Short URL Examples:
 
-- https://u.li2niu.com/468
 - https://u.li2niu.com/tcK
 - https://u.li2niu.com/666 (For 404)
 
@@ -142,3 +141,8 @@ Vercel has limits for free users, but it is unlikely to be easily overused.
 - Vercel
 - GPT-4
 - Cloudflare
+
+### Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=Likenttt/eastlake-cloudflare-worker-short-url&type=Date)](https://star-history.com/#Likenttt/eastlake-cloudflare-worker-short-url&Date)
+
