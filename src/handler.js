@@ -29,7 +29,7 @@ async function handleLogin(request) {
         username: username,
         exp: expireTime,
       },
-      JWT_SECRET
+      JWT_SECRET,
     );
 
     // // Store the JWT token in the KV namespace
@@ -240,7 +240,7 @@ async function addClickRecord(shortUrl, fullURLObj) {
   await LINKS.put(
     CLICKS_NAMESPACE + monthKey,
     JSON.stringify(monthRecords),
-    {}
+    {},
   );
 
   const yearValue = await LINKS.get(CLICKS_NAMESPACE + yearKey);
@@ -272,7 +272,7 @@ export async function handleRequest(event) {
     }
     // Redirect the user to the full URL
     const pathWithoutSlash = path.substring(1);
-    const key = `url:${pathWithoutSlash}`;
+    const key = `url:${pathWithoutSlash.split("?")[0]}`; // Split and take the first part to exclude query params
     console.log(`path is:${key}`);
     let fullURLObj = await LINKS.get(key);
     let response;
@@ -280,6 +280,14 @@ export async function handleRequest(event) {
 
     if (fullURLObj) {
       fullURLObj = JSON.parse(fullURLObj);
+      let redirectUrl = new URL(fullURLObj.longUrl);
+
+      // Append query parameters from the request to the redirect URL
+      const requestParams = new URL(request.url).searchParams;
+      requestParams.forEach((value, key) => {
+        redirectUrl.searchParams.append(key, value);
+      });
+
       if (fullURLObj.requirePassword) {
         // If the short URL requires a password, return the password page
         if (request.method === "GET") {
@@ -289,7 +297,7 @@ export async function handleRequest(event) {
         } else if (request.method === "POST") {
           const params = await request.json();
           console.log(
-            `password:${params.password} and fullURLObj.password ${fullURLObj.password}`
+            `password:${params.password} and fullURLObj.password ${fullURLObj.password}`,
           );
           // Handle password validation and redirection
           if (params.password && params.password === fullURLObj.password) {
@@ -300,7 +308,7 @@ export async function handleRequest(event) {
               JSON.stringify({ url: fullURLObj.longUrl }),
               {
                 headers: { "Content-Type": "application/json" },
-              }
+              },
             );
             return response;
           } else {
@@ -312,7 +320,7 @@ export async function handleRequest(event) {
         if (RECORD_CLICKS) {
           event.waitUntil(addClickRecord(pathWithoutSlash, fullURLObj)); // Schedule click event recording in the background
         }
-        response = Response.redirect(fullURLObj.longUrl, 301);
+        response = Response.redirect(redirectUrl.toString(), 301);
         return response;
       }
     } else {
@@ -381,7 +389,7 @@ export async function handleRequest(event) {
       JSON.stringify({ shortUrl: shortUrl, status: 200 }),
       {
         status: 200,
-      }
+      },
     );
     return response;
   }
