@@ -103,10 +103,10 @@ export default function Shorten() {
     });
     console.log(`Response:${JSON.stringify(response)}`);
     if (response.status === 200) {
-      setShortUrl(response.shortUrl);
+      setShortUrl(response.shortUrl || "");
       setOldShortUrl(response.shortUrl);
       setInfo(
-        `Url ${trimmedUrl} has been shorten to ${baseURL}/${response.shortUrl}`
+        `Url ${trimmedUrl} has been shorten to ${baseURL}/${response.shortUrl}`,
       );
       setLongUrl(response.longUrl);
       setShortUrlLength(response.shortUrlLength);
@@ -173,43 +173,41 @@ export default function Shorten() {
             </button>
           </div>
         </div>
-        {longUrl && shortUrl ? (
-          <div className="mb-4">
-            <label
-              htmlFor="shortUrl"
-              className="block text-gray-700 font-bold mb-2"
+        <div className="mb-4">
+          <label
+            htmlFor="shortUrl"
+            className="block text-gray-700 font-bold mb-2"
+          >
+            Short URL Output
+          </label>
+          <div className="relative flex items-center">
+            <input
+              type="text"
+              name="domain"
+              id="domain"
+              className="shadow appearance-none border rounded-l-lg w-2/3 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              value={baseURL + "/"}
+              readOnly
+            />
+            <input
+              type="text"
+              name="shortUrl"
+              id="shortUrl"
+              className="shadow appearance-none border w-1/3 rounded-r-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              value={shortUrl}
+              onChange={(event) => {
+                setShortUrl(event.target.value);
+              }}
+            />
+            <button
+              type="button"
+              className="absolute right-0 mr-2 text-black"
+              onClick={handleCopyClick}
             >
-              Short URL Output
-            </label>
-            <div className="relative flex items-center">
-              <input
-                type="text"
-                name="domain"
-                id="domain"
-                className="shadow appearance-none border rounded-l-lg w-2/3 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                value={baseURL + "/"}
-                readOnly
-              />
-              <input
-                type="text"
-                name="shortUrl"
-                id="shortUrl"
-                className="shadow appearance-none border w-1/3 rounded-r-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                value={shortUrl}
-                onChange={(event) => {
-                  setShortUrl(event.target.value);
-                }}
-              />
-              <button
-                type="button"
-                className="absolute right-0 mr-2 text-black"
-                onClick={handleCopyClick}
-              >
-                <FontAwesomeIcon icon={faCopy} />
-              </button>
-            </div>
+              <FontAwesomeIcon icon={faCopy} />
+            </button>
           </div>
-        ) : null}
+        </div>
 
         <div className="relative mb-4">
           <a
