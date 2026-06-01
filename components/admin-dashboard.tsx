@@ -26,6 +26,20 @@ const defaultForm = (longUrl = ""): FormState => ({
   expirationMinutes: "",
 });
 
+const focusRing =
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950/20 focus-visible:ring-offset-2";
+
+const inputClass =
+  "h-11 w-full rounded-md border border-neutral-300 bg-white px-3 text-sm text-neutral-950 outline-none transition-[border-color,box-shadow] placeholder:text-neutral-400 focus:border-neutral-950 focus-visible:ring-2 focus-visible:ring-neutral-950/10 disabled:cursor-not-allowed disabled:bg-neutral-50 disabled:text-neutral-400 motion-reduce:transition-none";
+
+const primaryButtonClass =
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-neutral-950 px-4 text-sm font-semibold text-white transition-[background-color,color,opacity] hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none";
+
+const secondaryButtonClass =
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-neutral-200 bg-white px-3 text-sm font-medium text-neutral-700 transition-[background-color,border-color,color] hover:border-neutral-300 hover:bg-neutral-50 motion-reduce:transition-none";
+
+const statCardClass = "min-w-0 rounded-lg border border-neutral-200 bg-white p-4 shadow-sm";
+
 function formatDate(value?: string) {
   if (!value) {
     return "无";
@@ -131,22 +145,22 @@ export function AdminDashboard({ initialLinks, initialLongUrl }: AdminDashboardP
           </div>
           <nav className="flex flex-wrap items-center gap-2">
             <Link
-              className="inline-flex h-9 items-center gap-2 rounded-md border border-neutral-200 bg-white px-3 text-sm font-medium text-neutral-700 transition hover:border-neutral-300 hover:bg-neutral-50"
+              className={`${secondaryButtonClass} ${focusRing} sm:min-h-9`}
               href="/history"
             >
               <BarChart3 size={16} aria-hidden />
               历史
             </Link>
             <button
-              className="inline-flex h-9 items-center gap-2 rounded-md border border-neutral-200 bg-white px-3 text-sm font-medium text-neutral-700 transition hover:border-neutral-300 hover:bg-neutral-50"
+              className={`${secondaryButtonClass} ${focusRing} sm:min-h-9`}
               onClick={refreshLinks}
               type="button"
             >
-              <RefreshCw className={isRefreshing ? "animate-spin" : ""} size={16} aria-hidden />
+              <RefreshCw className={isRefreshing ? "animate-spin motion-reduce:animate-none" : ""} size={16} aria-hidden />
               刷新
             </button>
             <button
-              className="inline-flex h-9 items-center gap-2 rounded-md bg-neutral-950 px-3 text-sm font-medium text-white transition hover:bg-neutral-800"
+              className={`${primaryButtonClass} ${focusRing} px-3 sm:min-h-9`}
               onClick={logout}
               type="button"
             >
@@ -171,7 +185,7 @@ export function AdminDashboard({ initialLinks, initialLongUrl }: AdminDashboardP
               </label>
               <input
                 id="longUrl"
-                className="h-11 w-full rounded-md border border-neutral-300 px-3 text-sm outline-none transition focus:border-neutral-950"
+                className={inputClass}
                 value={form.longUrl}
                 onChange={(event) => setForm((current) => ({ ...current, longUrl: event.target.value }))}
                 placeholder="https://example.com/article"
@@ -186,7 +200,7 @@ export function AdminDashboard({ initialLinks, initialLongUrl }: AdminDashboardP
                 </label>
                 <input
                   id="slug"
-                  className="h-11 w-full rounded-md border border-neutral-300 px-3 text-sm outline-none transition focus:border-neutral-950"
+                  className={inputClass}
                   value={form.slug}
                   onChange={(event) => setForm((current) => ({ ...current, slug: event.target.value }))}
                   placeholder="optional"
@@ -198,7 +212,7 @@ export function AdminDashboard({ initialLinks, initialLongUrl }: AdminDashboardP
                 </label>
                 <input
                   id="length"
-                  className="h-11 w-full rounded-md border border-neutral-300 px-3 text-sm outline-none transition focus:border-neutral-950"
+                  className={`${inputClass} tabular-nums`}
                   max={24}
                   min={3}
                   type="number"
@@ -216,7 +230,7 @@ export function AdminDashboard({ initialLinks, initialLongUrl }: AdminDashboardP
                 </label>
                 <input
                   id="password"
-                  className="h-11 w-full rounded-md border border-neutral-300 px-3 text-sm outline-none transition focus:border-neutral-950"
+                  className={inputClass}
                   value={form.password}
                   onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))}
                   placeholder="optional"
@@ -229,7 +243,7 @@ export function AdminDashboard({ initialLinks, initialLongUrl }: AdminDashboardP
                 </label>
                 <input
                   id="expires"
-                  className="h-11 w-full rounded-md border border-neutral-300 px-3 text-sm outline-none transition focus:border-neutral-950"
+                  className={`${inputClass} tabular-nums`}
                   min={1}
                   type="number"
                   value={form.expirationMinutes}
@@ -239,10 +253,14 @@ export function AdminDashboard({ initialLinks, initialLongUrl }: AdminDashboardP
               </div>
             </div>
 
-            {message ? <p className="text-sm text-red-600">{message}</p> : null}
+            {message ? (
+              <p aria-live="polite" className="text-sm text-red-600">
+                {message}
+              </p>
+            ) : null}
 
             <button
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-neutral-950 px-4 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-60"
+              className={`${primaryButtonClass} ${focusRing}`}
               disabled={isSubmitting}
               type="submit"
             >
@@ -255,7 +273,7 @@ export function AdminDashboard({ initialLinks, initialLongUrl }: AdminDashboardP
             <div className="mt-5 rounded-md border border-emerald-200 bg-emerald-50 p-3">
               <p className="mb-2 text-sm font-medium text-emerald-900">已创建</p>
               <button
-                className="flex w-full items-center justify-between gap-3 rounded-md bg-white px-3 py-2 text-left text-sm text-emerald-950 ring-1 ring-emerald-200"
+                className={`flex min-h-11 w-full items-center justify-between gap-3 rounded-md bg-white px-3 py-2 text-left text-sm text-emerald-950 ring-1 ring-emerald-200 transition-[background-color,box-shadow] hover:bg-emerald-50/60 motion-reduce:transition-none ${focusRing}`}
                 type="button"
                 onClick={() => copy(createdUrl, "created")}
               >
@@ -268,17 +286,17 @@ export function AdminDashboard({ initialLinks, initialLongUrl }: AdminDashboardP
 
         <section className="min-w-0">
           <div className="mb-4 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">
+            <div className={statCardClass}>
               <p className="text-sm text-neutral-500">总短链</p>
-              <p className="mt-2 text-2xl font-semibold tracking-normal text-neutral-950">{links.length}</p>
+              <p className="mt-2 font-mono text-2xl font-semibold tabular-nums tracking-normal text-neutral-950">{links.length}</p>
             </div>
-            <div className="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">
+            <div className={statCardClass}>
               <p className="text-sm text-neutral-500">有效短链</p>
-              <p className="mt-2 text-2xl font-semibold tracking-normal text-neutral-950">{activeLinks}</p>
+              <p className="mt-2 font-mono text-2xl font-semibold tabular-nums tracking-normal text-neutral-950">{activeLinks}</p>
             </div>
-            <div className="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">
+            <div className={statCardClass}>
               <p className="text-sm text-neutral-500">累计点击</p>
-              <p className="mt-2 text-2xl font-semibold tracking-normal text-neutral-950">{totalClicks}</p>
+              <p className="mt-2 font-mono text-2xl font-semibold tabular-nums tracking-normal text-neutral-950">{totalClicks}</p>
             </div>
           </div>
 
@@ -287,24 +305,95 @@ export function AdminDashboard({ initialLinks, initialLongUrl }: AdminDashboardP
               <h2 className="text-base font-semibold tracking-normal text-neutral-950">短链列表</h2>
             </div>
 
-            <div className="overflow-x-auto">
+            <div className="divide-y divide-neutral-200 md:hidden">
+              {links.map((link) => (
+                <article key={link.slug} className="p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <button
+                      className={`flex min-w-0 flex-1 items-start gap-2 rounded-sm text-left ${focusRing}`}
+                      type="button"
+                      onClick={() => copy(link.shortUrl, link.slug)}
+                    >
+                      <span className="min-w-0">
+                        <span className="block truncate text-sm font-medium text-neutral-950">{link.shortUrl}</span>
+                        <span className="mt-1 block text-xs text-neutral-500">/{link.slug}</span>
+                      </span>
+                      <span className="mt-0.5 shrink-0 text-neutral-500">
+                        {copiedSlug === link.slug ? <Check size={15} aria-hidden /> : <Clipboard size={15} aria-hidden />}
+                      </span>
+                    </button>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <Link
+                        aria-label={`查看 /${link.slug} 的点击历史`}
+                        className={`inline-flex size-11 items-center justify-center rounded-md border border-neutral-200 bg-white text-neutral-700 transition-[background-color,border-color,color] hover:bg-neutral-50 motion-reduce:transition-none ${focusRing}`}
+                        href={`/history?slug=${encodeURIComponent(link.slug)}`}
+                        title="查看历史"
+                      >
+                        <BarChart3 size={15} aria-hidden />
+                      </Link>
+                      <button
+                        aria-label={`删除 /${link.slug}`}
+                        className={`inline-flex size-11 items-center justify-center rounded-md border border-neutral-200 bg-white text-red-600 transition-[background-color,border-color,color] hover:border-red-200 hover:bg-red-50 motion-reduce:transition-none ${focusRing}`}
+                        type="button"
+                        onClick={() => deleteLink(link.slug)}
+                        title="删除"
+                      >
+                        <Trash2 size={15} aria-hidden />
+                      </button>
+                    </div>
+                  </div>
+
+                  <a
+                    className={`mt-3 flex min-h-10 max-w-full items-center gap-2 rounded-md border border-neutral-200 bg-neutral-50 px-3 text-sm text-neutral-700 transition-[background-color,color] hover:bg-white hover:text-neutral-950 motion-reduce:transition-none ${focusRing}`}
+                    href={link.longUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <span className="min-w-0 truncate">{link.longUrl}</span>
+                    <ExternalLink className="shrink-0" size={14} aria-hidden />
+                  </a>
+
+                  <dl className="mt-4 grid grid-cols-2 gap-3 rounded-md border border-neutral-200 bg-neutral-50 p-3">
+                    <div>
+                      <dt className="text-xs text-neutral-500">点击</dt>
+                      <dd className="mt-1 font-mono text-sm font-semibold tabular-nums text-neutral-950">{link.clicks}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-neutral-500">过期</dt>
+                      <dd className="mt-1 font-mono text-sm tabular-nums text-neutral-700">
+                        {link.expiresAt ? formatDate(link.expiresAt) : "永久"}
+                      </dd>
+                    </div>
+                    <div className="col-span-2">
+                      <dt className="text-xs text-neutral-500">最后点击</dt>
+                      <dd className="mt-1 font-mono text-sm tabular-nums text-neutral-700">{formatDate(link.lastClickedAt)}</dd>
+                    </div>
+                  </dl>
+                </article>
+              ))}
+              {links.length === 0 ? (
+                <div className="px-4 py-12 text-center text-sm text-neutral-500">还没有短链接</div>
+              ) : null}
+            </div>
+
+            <div className="hidden overflow-x-auto md:block">
               <table className="w-full min-w-[820px] border-collapse text-sm">
-                <thead className="bg-neutral-50 text-left text-neutral-500">
+                <thead className="bg-neutral-50 text-left text-xs text-neutral-500">
                   <tr>
-                    <th className="px-4 py-3 font-medium">短链接</th>
-                    <th className="px-4 py-3 font-medium">目标链接</th>
-                    <th className="px-4 py-3 font-medium">点击</th>
-                    <th className="px-4 py-3 font-medium">过期</th>
-                    <th className="px-4 py-3 font-medium">操作</th>
+                    <th className="px-4 py-3 font-medium uppercase tracking-[0.02em]">短链接</th>
+                    <th className="px-4 py-3 font-medium uppercase tracking-[0.02em]">目标链接</th>
+                    <th className="px-4 py-3 font-medium uppercase tracking-[0.02em]">点击</th>
+                    <th className="px-4 py-3 font-medium uppercase tracking-[0.02em]">过期</th>
+                    <th className="px-4 py-3 font-medium uppercase tracking-[0.02em]">操作</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-neutral-200">
                   {links.map((link) => (
-                    <tr key={link.slug} className="align-top">
+                    <tr key={link.slug} className="align-top transition-[background-color] hover:bg-neutral-50/70 motion-reduce:transition-none">
                       <td className="px-4 py-3">
                         <div className="flex min-w-0 flex-col gap-1">
                           <button
-                            className="inline-flex max-w-[260px] items-center gap-2 text-left font-medium text-neutral-950"
+                            className={`inline-flex max-w-[260px] items-center gap-2 rounded-sm text-left font-medium text-neutral-950 ${focusRing}`}
                             type="button"
                             onClick={() => copy(link.shortUrl, link.slug)}
                           >
@@ -316,7 +405,7 @@ export function AdminDashboard({ initialLinks, initialLongUrl }: AdminDashboardP
                       </td>
                       <td className="px-4 py-3">
                         <a
-                          className="inline-flex max-w-[320px] items-center gap-2 text-neutral-700 hover:text-neutral-950"
+                          className={`inline-flex max-w-[320px] items-center gap-2 rounded-sm text-neutral-700 transition-[color] hover:text-neutral-950 motion-reduce:transition-none ${focusRing}`}
                           href={link.longUrl}
                           target="_blank"
                           rel="noreferrer"
@@ -326,21 +415,25 @@ export function AdminDashboard({ initialLinks, initialLongUrl }: AdminDashboardP
                         </a>
                       </td>
                       <td className="px-4 py-3 text-neutral-700">
-                        <div className="font-medium text-neutral-950">{link.clicks}</div>
-                        <div className="text-xs text-neutral-500">{formatDate(link.lastClickedAt)}</div>
+                        <div className="font-mono font-medium tabular-nums text-neutral-950">{link.clicks}</div>
+                        <div className="font-mono text-xs tabular-nums text-neutral-500">{formatDate(link.lastClickedAt)}</div>
                       </td>
-                      <td className="px-4 py-3 text-neutral-700">{link.expiresAt ? formatDate(link.expiresAt) : "永久"}</td>
+                      <td className="px-4 py-3 font-mono text-neutral-700 tabular-nums">
+                        {link.expiresAt ? formatDate(link.expiresAt) : "永久"}
+                      </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <Link
-                            className="inline-flex size-8 items-center justify-center rounded-md border border-neutral-200 bg-white text-neutral-700 transition hover:bg-neutral-50"
+                            aria-label={`查看 /${link.slug} 的点击历史`}
+                            className={`inline-flex size-11 items-center justify-center rounded-md border border-neutral-200 bg-white text-neutral-700 transition-[background-color,border-color,color] hover:bg-neutral-50 motion-reduce:transition-none sm:size-9 ${focusRing}`}
                             href={`/history?slug=${encodeURIComponent(link.slug)}`}
                             title="查看历史"
                           >
                             <BarChart3 size={15} aria-hidden />
                           </Link>
                           <button
-                            className="inline-flex size-8 items-center justify-center rounded-md border border-neutral-200 bg-white text-red-600 transition hover:bg-red-50"
+                            aria-label={`删除 /${link.slug}`}
+                            className={`inline-flex size-11 items-center justify-center rounded-md border border-neutral-200 bg-white text-red-600 transition-[background-color,border-color,color] hover:border-red-200 hover:bg-red-50 motion-reduce:transition-none sm:size-9 ${focusRing}`}
                             type="button"
                             onClick={() => deleteLink(link.slug)}
                             title="删除"

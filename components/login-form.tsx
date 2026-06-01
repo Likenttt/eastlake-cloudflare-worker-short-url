@@ -4,6 +4,12 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ArrowRight, LockKeyhole, Link2 } from "lucide-react";
 
+const inputClass =
+  "h-11 rounded-md border border-neutral-300 bg-white px-3 text-sm text-neutral-950 outline-none transition-[border-color,box-shadow] placeholder:text-neutral-400 focus:border-neutral-950 focus-visible:ring-2 focus-visible:ring-neutral-950/10 motion-reduce:transition-none";
+
+const primaryButtonClass =
+  "mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-neutral-950 px-4 text-sm font-semibold text-white transition-[background-color,color,opacity] hover:bg-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none";
+
 export function LoginForm() {
   const router = useRouter();
   const [username, setUsername] = useState("");
@@ -36,7 +42,7 @@ export function LoginForm() {
   return (
     <main className="min-h-screen px-4 py-6 sm:px-6">
       <div className="mx-auto flex min-h-[calc(100vh-3rem)] w-full max-w-5xl items-center justify-center">
-        <section className="grid w-full overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-[0_24px_80px_rgba(15,23,42,0.08)] md:grid-cols-[1fr_1.08fr]">
+        <section className="grid w-full overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-[0_18px_70px_rgba(15,23,42,0.08)] md:grid-cols-[1fr_1.08fr]">
           <div className="flex min-h-[360px] flex-col justify-between bg-neutral-950 p-8 text-white sm:p-10">
             <div className="flex items-center gap-3">
               <span className="flex size-10 items-center justify-center rounded-md bg-white text-neutral-950">
@@ -71,7 +77,7 @@ export function LoginForm() {
             </label>
             <input
               id="username"
-              className="h-11 rounded-md border border-neutral-300 bg-white px-3 text-sm outline-none transition focus:border-neutral-950"
+              className={inputClass}
               value={username}
               onChange={(event) => setUsername(event.target.value)}
               autoComplete="username"
@@ -83,7 +89,7 @@ export function LoginForm() {
             </label>
             <input
               id="password"
-              className="h-11 rounded-md border border-neutral-300 bg-white px-3 text-sm outline-none transition focus:border-neutral-950"
+              className={inputClass}
               type="password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
@@ -91,10 +97,14 @@ export function LoginForm() {
               required
             />
 
-            {error ? <p className="mt-3 text-sm text-red-600">{error}</p> : null}
+            {error ? (
+              <p aria-live="polite" className="mt-3 text-sm text-red-600">
+                {error}
+              </p>
+            ) : null}
 
             <button
-              className="mt-6 inline-flex h-11 items-center justify-center gap-2 rounded-md bg-neutral-950 px-4 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-60"
+              className={primaryButtonClass}
               type="submit"
               disabled={isSubmitting}
             >

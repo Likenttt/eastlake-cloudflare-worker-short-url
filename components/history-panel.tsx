@@ -12,6 +12,17 @@ type HistoryPanelProps = {
   initialHistory: HistoryPoint[];
 };
 
+const focusRing =
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950/20 focus-visible:ring-offset-2";
+
+const primaryButtonClass =
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-neutral-950 px-3 text-sm font-medium text-white transition-[background-color,color,opacity] hover:bg-neutral-800 motion-reduce:transition-none";
+
+const secondaryButtonClass =
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-neutral-200 bg-white px-3 text-sm font-medium text-neutral-700 transition-[background-color,border-color,color] hover:border-neutral-300 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none";
+
+const statCardClass = "min-w-0 rounded-lg border border-neutral-200 bg-white p-4 shadow-sm";
+
 function formatDate(value?: string) {
   if (!value) {
     return "无";
@@ -69,14 +80,14 @@ export function HistoryPanel({ initialLinks, initialSlug, initialStats, initialH
           </div>
           <nav className="flex flex-wrap items-center gap-2">
             <Link
-              className="inline-flex h-9 items-center gap-2 rounded-md border border-neutral-200 bg-white px-3 text-sm font-medium text-neutral-700 transition hover:border-neutral-300 hover:bg-neutral-50"
+              className={`${secondaryButtonClass} ${focusRing} sm:min-h-9`}
               href="/shorten"
             >
               <ArrowLeft size={16} aria-hidden />
               管理
             </Link>
             <button
-              className="inline-flex h-9 items-center gap-2 rounded-md bg-neutral-950 px-3 text-sm font-medium text-white transition hover:bg-neutral-800"
+              className={`${primaryButtonClass} ${focusRing} sm:min-h-9`}
               onClick={logout}
               type="button"
             >
@@ -96,7 +107,7 @@ export function HistoryPanel({ initialLinks, initialSlug, initialStats, initialH
               </label>
               <select
                 id="slug"
-                className="h-11 w-full rounded-md border border-neutral-300 bg-white px-3 text-sm outline-none transition focus:border-neutral-950"
+                className="h-11 w-full rounded-md border border-neutral-300 bg-white px-3 text-sm text-neutral-950 outline-none transition-[border-color,box-shadow] focus:border-neutral-950 focus-visible:ring-2 focus-visible:ring-neutral-950/10 motion-reduce:transition-none"
                 value={slug}
                 onChange={(event) => {
                   setSlug(event.target.value);
@@ -111,31 +122,33 @@ export function HistoryPanel({ initialLinks, initialSlug, initialStats, initialH
               </select>
             </div>
             <button
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-neutral-200 bg-white px-4 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-60"
+              className={`${secondaryButtonClass} ${focusRing} px-4`}
               disabled={!slug || isLoading}
               onClick={() => loadHistory()}
               type="button"
             >
-              <RefreshCw className={isLoading ? "animate-spin" : ""} size={16} aria-hidden />
+              <RefreshCw className={isLoading ? "animate-spin motion-reduce:animate-none" : ""} size={16} aria-hidden />
               刷新历史
             </button>
           </div>
         </section>
 
         <div className="mb-6 grid gap-3 sm:grid-cols-3">
-          <div className="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">
+          <div className={statCardClass}>
             <p className="text-sm text-neutral-500">总点击</p>
-            <p className="mt-2 text-2xl font-semibold tracking-normal text-neutral-950">{stats.total}</p>
+            <p className="mt-2 font-mono text-2xl font-semibold tabular-nums tracking-normal text-neutral-950">{stats.total}</p>
           </div>
-          <div className="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">
+          <div className={statCardClass}>
             <p className="text-sm text-neutral-500">最后点击</p>
-            <p className="mt-2 text-2xl font-semibold tracking-normal text-neutral-950">{formatDate(stats.lastClickedAt)}</p>
+            <p className="mt-2 font-mono text-2xl font-semibold tabular-nums tracking-normal text-neutral-950">
+              {formatDate(stats.lastClickedAt)}
+            </p>
           </div>
-          <div className="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">
+          <div className={statCardClass}>
             <p className="text-sm text-neutral-500">目标链接</p>
-            <p className="mt-2 flex items-center gap-2 truncate text-sm font-medium text-neutral-950">
-              <Link2 size={15} aria-hidden />
-              {selected?.longUrl ?? "无"}
+            <p className="mt-2 flex min-w-0 items-center gap-2 text-sm font-medium text-neutral-950">
+              <Link2 className="shrink-0" size={15} aria-hidden />
+              <span className="min-w-0 truncate">{selected?.longUrl ?? "无"}</span>
             </p>
           </div>
         </div>
@@ -148,19 +161,21 @@ export function HistoryPanel({ initialLinks, initialSlug, initialStats, initialH
             </div>
           </div>
 
-          <div className="grid h-[320px] grid-cols-[repeat(30,minmax(9px,1fr))] items-end gap-2 overflow-hidden border-b border-neutral-200 pb-3">
+          <div className="grid h-[320px] grid-cols-[repeat(30,minmax(2px,1fr))] items-end gap-1 overflow-hidden border-b border-neutral-200 pb-3 sm:grid-cols-[repeat(30,minmax(9px,1fr))] sm:gap-2">
             {history.map((point) => (
               <div key={point.date} className="group flex h-full min-w-0 flex-col justify-end">
                 <div
-                  className="min-h-1 rounded-sm bg-neutral-950 transition group-hover:bg-emerald-600"
-                  style={{ height: `${Math.max(2, (point.clicks / maxClicks) * 100)}%` }}
+                  className={`min-h-1 rounded-sm transition-[background-color] motion-reduce:transition-none ${
+                    point.clicks > 0 ? "bg-neutral-950 group-hover:bg-emerald-600" : "bg-neutral-200 group-hover:bg-neutral-300"
+                  }`}
+                  style={{ height: point.clicks > 0 ? `${Math.max(2, (point.clicks / maxClicks) * 100)}%` : "2px" }}
                   title={`${point.date}: ${point.clicks}`}
                 />
               </div>
             ))}
           </div>
 
-          <div className="mt-3 flex items-center justify-between text-xs text-neutral-500">
+          <div className="mt-3 flex items-center justify-between font-mono text-xs tabular-nums text-neutral-500">
             <span>{history[0]?.date ?? "无数据"}</span>
             <span>{history.at(-1)?.date ?? "无数据"}</span>
           </div>

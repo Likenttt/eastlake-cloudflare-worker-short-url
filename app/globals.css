@@ -41,6 +41,13 @@ a {
   text-decoration: none;
 }
 
+button,
+a,
+input,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+
 ::selection {
   background: #171717;
   color: #fff;
