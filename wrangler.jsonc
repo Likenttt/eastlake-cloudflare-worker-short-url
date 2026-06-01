@@ -8,9 +8,15 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS"
   },
+  "routes": [
+    {
+      "pattern": "s.wristtale.com",
+      "custom_domain": true
+    }
+  ],
   "vars": {
     "ADMIN_USERNAME": "admin",
-    "APP_BASE_URL": "https://short.example.com",
+    "APP_BASE_URL": "https://s.wristtale.com",
     "DEFAULT_REDIRECT_URL": "https://example.com",
     "RECORD_CLICKS": "true"
   },
