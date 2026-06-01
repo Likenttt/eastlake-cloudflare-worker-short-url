@@ -1,155 +1,136 @@
 # East Lake Short URL System
 
-Based on Cloudflare Workers & Vercel
+基于 Next.js 和 Cloudflare 的短链接系统。
 
-> **Notice**: I found the test site **u.li2niu.com** was abused by phishing emails. So I cancelled the deployment. Please deploy the version of your own. 
+[简体中文](./readme-zhCN.md)
 
-[🇨🇳 简体中文](./readme-zhCN.md)
-
-**Try it now:** https://cf-url-admin.li2niu.com/
-
-- Username: li2niu
-- Password: li2niu
-
-_Please don't delete data with many clicks. We believe you won't._
-
-## Short URL Examples:
-
-- https://u.li2niu.com/tcK
-- https://u.li2niu.com/666 (For 404)
-
-## Screenshots
-
-![Login](./images/screenshots-login.jpg)
-![Shorten With List](./images/screenshots-shorten-with-list.jpg)
-![Click History](./images/screenshots-click-history.jpg)
-![Password Protected](./images/screenshots-password-protected.jpg)
-![404](./images/screenshots-404.jpg)
+This project is now a single Cloudflare-first application. The admin UI, short-link redirect handler, KV data access, and asynchronous click counter all run from one Next.js project deployed to Cloudflare Workers through `@opennextjs/cloudflare`.
 
 ## Features
 
-### Frontend Admin (Next.js Project deployed on Vercel, source in /fe)
+- Next.js App Router admin pages: login, link creation, link list, and click history.
+- Cloudflare KV stores link records, expiration metadata, and aggregated click stats.
+- Cloudflare Queues decouple click counting from redirects. Redirects enqueue a click event with `ctx.waitUntil()`, while the Worker `queue()` handler batches KV counter writes.
+- HttpOnly signed admin session cookie. Secrets are read from Cloudflare Worker secrets, not from source code.
+- Password-protected short links and expiring links.
+- URL parameter prefill for link creation, for example `/shorten?url=https://example.com`.
 
-- [x] Login page: get credentials to proceed.
-- [x] Shorten page: create short URLs.
-- [x] List page: display short URLs in a table.
-- [x] History page: view the click history for a specific short URL.
-
-### Backend Server (Cloudflare Worker, source in root directory)
-
-- [x] Correctly and swiftly redirect a short URL to its original long URL.
-- [x] Monitor click history per link (optional; note that if enabled, it will consume many read/write times for Cloudflare KV. If you are on a paid plan, forget it because of the unlimited read/write times. But keep in mind that KV is designed more for read rather than write, so inconsistency may exist).
-- [x] Expiration time supported.
-- [x] Password protection supported.
-- [x] 404 Not Found fallback page.
-
-## Prerequisites
-
-You must have:
-
-1. A Vercel account.
-2. A Cloudflare account.
-3. A domain (the shorter, the better). If the domain is managed by Cloudflare, later operations will be much easier.
-
-## Deployment
-
-Fork this repo and clone it to your local machine. Then start the deployment process.
-
-### Frontend Admin
-
-The frontend code is in /fe, which is a Next.js project. Vercel is highly recommended.
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FLikenttt%2Fcloudflare-worker-short-url&env=CLOUDFLARE_WORKER_BASE_URL&envDescription=The%20base%20url%20you%20want%20to%20use%20for%20your%20short%20url.%20&project-name=cloudflare-worker-short-url&repository-name=cloudflare-worker-short-url&demo-title=li2niu-cloudflare-worker-short-url&demo-url=https%3A%2F%2Fcf-url-admin.li2niu.com)
-
-If you want google analytics, remember to add the following env **NEXT_PUBLIC_GA_MEASUREMENT_ID=< your ga4 key e.g G-xxxxxxxxxx>**
+## Architecture
 
 ```
-NEXT_PUBLIC_GA_MEASUREMENT_ID=G-xxxxxxxxxx
+Browser
+  -> Cloudflare Worker running OpenNext
+      -> Next.js admin routes
+      -> /:slug redirect route
+          -> Cloudflare Queue producer
+      -> queue() consumer
+          -> Cloudflare KV aggregate counters
 ```
 
-![Add the env variable as shorturl also backend server endpoint](images/add-cf-base-url-env.jpg)
-![Change the default root](./images/change-nextjs-project-root-2-fe.jpg)
-![Redeployment](./images/redeployment.jpg)
+KV is eventually consistent and optimized for read-heavy workloads. The queue removes counter writes from the redirect critical path and batches writes, but extremely high concurrency on the same slug can still be approximate. If exact per-click accounting is required, move counters to Durable Objects or D1.
 
-### Backend Server
+## Requirements
 
-#### Initialize Cloudflare KV namespace
+- Node.js 20.9 or newer.
+- A Cloudflare account.
+- Wrangler login: `npx wrangler login`.
 
-Fill in the KV namespace ID in `wrangler.toml` below. It is not necessary to name your namespace `LINKS` because it is just a global variable exposed to the worker.
+## Cloudflare Setup
 
-```
-[[kv_namespaces]]
-binding = "LINKS"
-id = "7f0bf9809c464f51871b753cdda2c124" ## Change it to yours
-```
+Create a KV namespace:
 
-![Create namespace](./images/create-kv-namespace.jpg)
-![Get namespace id](./images/kv-namespace-id.jpg)
-
-#### Create a worker service
-
-![Create a worker service](./images/create-a-worker-service.jpg)
-
-#### Add environment variables.
-
-![Create Environment Variables](./images/edit-env-vars.jpg)
-Don't expose your vars in `wrangler.toml`
-
-```
-USERNAME = "li2niu" # Change it and don't expose it in this file
-PASSWORD = "li2niu" # Change it and don't expose it in this file
-JWT_SECRET = "li2niu" # Change it and don't expose it in this file
-DEFAULT_PAGE = "https://blog.li2niu.com" # Change it
-RECORD_CLICKS = true
-FE_ADMIN_DOMAIN = "https://cf-url-admin.li2niu.com" # Replace it with your admin domain, important for cross-origin allowlist
-
+```bash
+npx wrangler kv namespace create LINKS
 ```
 
-#### Clone your repo to local
+Create a queue:
 
-```
-git clone yourrepo
-```
-
-#### Install Wrangler CLI Locally and Log in to Cloudflare
-
-```
-npm install -g wrangler
-wrangler login
+```bash
+npx wrangler queues create shorturl-click-events
 ```
 
-#### Deploy
+Update `wrangler.jsonc`:
 
+- Replace `kv_namespaces[0].id` with the KV namespace ID.
+- Set `APP_BASE_URL` to your short-link domain.
+- Set `DEFAULT_REDIRECT_URL` if missing or expired short links should redirect somewhere.
+
+Set secrets:
+
+```bash
+npx wrangler secret put ADMIN_PASSWORD
+npx wrangler secret put AUTH_SECRET
 ```
-wrangler publish
+
+`ADMIN_USERNAME` is a non-secret default in `wrangler.jsonc`. Change it there if needed.
+
+For local development, copy `.dev.vars.example` to `.dev.vars` and fill the same secret values.
+
+## Development
+
+Install dependencies:
+
+```bash
+npm install
 ```
 
-Create your short URL in the frontend admin. Enjoy!
+Generate Cloudflare binding types after editing `wrangler.jsonc`:
 
-### Notices
+```bash
+npm run cf-typegen
+```
 
-#### Security
+Run the Next.js dev server:
 
-Use a long, difficult-to-guess username, password, and JWT secret for security.
+```bash
+npm run dev
+```
 
-#### Cloudflare Free Plan Limits
+Preview in the Workers runtime:
 
-Cloudflare free plan has [limits](https://developers.cloudflare.com/workers/platform/limits/#kv-limits) for KV, especially write times. Even in a paid plan, the write speed for the same key is limited to 1 time/second, potentially causing inaccuracies in high concurrency. Click history is not recommended for **free plan** users.
+```bash
+npm run preview
+```
 
-#### Vercel Limits
+## Deploy
 
-Vercel has limits for free users, but it is unlikely to be easily overused.
+Build and deploy to Cloudflare Workers:
 
-### Support the Project
+```bash
+npm run deploy
+```
 
-<a href="https://www.buymeacoffee.com/lichuanyi" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
+The deploy script uses `opennextjs-cloudflare build`, then Wrangler deploys `worker.ts`. The custom Worker forwards HTTP requests to the generated OpenNext Worker and handles Queue batches in the same deployed Worker.
 
-### Credits
+## Useful Commands
 
-- Vercel
-- GPT-4
-- Cloudflare
+```bash
+npm run typecheck
+npm run lint
+npm run build
+npm run build:worker
+npx wrangler tail
+```
 
-### Star History
+## Configuration
 
-[![Star History Chart](https://api.star-history.com/svg?repos=Likenttt/eastlake-cloudflare-worker-short-url&type=Date)](https://star-history.com/#Likenttt/eastlake-cloudflare-worker-short-url&Date)
+| Binding or variable | Type | Purpose |
+| --- | --- | --- |
+| `LINKS` | KV namespace | Link records, stats, and daily click history |
+| `CLICK_EVENTS` | Queue | Asynchronous click-event pipeline |
+| `ADMIN_USERNAME` | Wrangler var | Admin username |
+| `ADMIN_PASSWORD` | Secret | Admin password |
+| `AUTH_SECRET` | Secret | HMAC secret for signed session cookies |
+| `APP_BASE_URL` | Wrangler var | Public base URL for generated short links |
+| `DEFAULT_REDIRECT_URL` | Wrangler var | Fallback redirect URL |
+| `RECORD_CLICKS` | Wrangler var | Set to `false` to disable click recording |
+
+## Data Keys
+
+- `link:<slug>` stores the link record.
+- `stats:<slug>` stores total clicks and the last click timestamp.
+- `click-day:<slug>:YYYY-MM-DD` stores daily click counts.
+
+## Remote PR Status
+
+Before this Cloudflare rewrite, remote PR #2 was fetched and merged locally. It added URL-parameter support for creating short links and default output display behavior; the new Next.js admin keeps that behavior through `/shorten?url=...` and the created-link result panel.

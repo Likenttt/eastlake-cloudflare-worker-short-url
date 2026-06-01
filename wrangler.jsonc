@@ -1,0 +1,43 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "cf-worker-shorturl",
+  "main": "worker.ts",
+  "compatibility_date": "2026-06-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "vars": {
+    "ADMIN_USERNAME": "admin",
+    "APP_BASE_URL": "https://short.example.com",
+    "DEFAULT_REDIRECT_URL": "https://example.com",
+    "RECORD_CLICKS": "true"
+  },
+  "kv_namespaces": [
+    {
+      "binding": "LINKS",
+      "id": "00000000000000000000000000000000"
+    }
+  ],
+  "queues": {
+    "producers": [
+      {
+        "binding": "CLICK_EVENTS",
+        "queue": "shorturl-click-events"
+      }
+    ],
+    "consumers": [
+      {
+        "queue": "shorturl-click-events",
+        "max_batch_size": 50,
+        "max_batch_timeout": 5,
+        "max_retries": 3
+      }
+    ]
+  },
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  }
+}

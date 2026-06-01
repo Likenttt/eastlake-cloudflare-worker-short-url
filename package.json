@@ -1,25 +1,36 @@
 {
   "name": "cf-worker-shorturl",
-  "version": "0.0.0",
-  "devDependencies": {
-    "@babel/core": "^7.21.4",
-    "@babel/preset-env": "^7.21.4",
-    "@cloudflare/types": "^6.21.8",
-    "@types/node": "^18.15.11",
-    "babel-loader": "^9.1.2",
-    "typescript": "^5.0.4",
-    "wrangler": "2.14.0"
-  },
+  "version": "1.0.0",
+  "description": "基于 Next.js 和 Cloudflare 的短链接系统",
   "private": true,
   "scripts": {
-    "build": "babel src -d dist",
-    "start": "wrangler dev",
-    "deploy": "wrangler publish"
+    "dev": "next dev",
+    "build": "next build",
+    "build:worker": "opennextjs-cloudflare build",
+    "preview": "npm run build:worker && wrangler dev",
+    "deploy": "npm run build:worker && wrangler deploy",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint ."
   },
   "dependencies": {
-    "@cloudflare/workers-types": "^4.20230404.0",
-    "@tsndr/cloudflare-worker-jwt": "^2.2.1",
-    "cookie": "^0.5.0",
-    "node-fetch": "^3.3.1"
+    "@opennextjs/cloudflare": "^1.19.11",
+    "lucide-react": "^1.17.0",
+    "next": "^16.2.6",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260531.1",
+    "@tailwindcss/postcss": "^4.3.0",
+    "@types/node": "^25.9.1",
+    "@types/react": "^19.2.15",
+    "@types/react-dom": "^19.2.3",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^16.2.6",
+    "tailwindcss": "^4.3.0",
+    "typescript": "^6.0.3",
+    "wrangler": "^4.95.0"
   }
 }
