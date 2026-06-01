@@ -8,7 +8,7 @@ const inputClass =
   "h-11 rounded-md border border-neutral-300 bg-white px-3 text-sm text-neutral-950 outline-none transition-[border-color,box-shadow] placeholder:text-neutral-400 focus:border-neutral-950 focus-visible:ring-2 focus-visible:ring-neutral-950/10 motion-reduce:transition-none";
 
 const primaryButtonClass =
-  "mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-neutral-950 px-4 text-sm font-semibold text-white transition-[background-color,color,opacity] hover:bg-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none";
+  "mt-6 inline-flex min-h-11 touch-manipulation items-center justify-center gap-2 rounded-md bg-neutral-950 px-4 text-sm font-semibold text-white transition-[background-color,color,opacity] hover:bg-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none";
 
 export function LoginForm() {
   const router = useRouter();

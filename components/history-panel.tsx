@@ -16,10 +16,10 @@ const focusRing =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950/20 focus-visible:ring-offset-2";
 
 const primaryButtonClass =
-  "inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-neutral-950 px-3 text-sm font-medium text-white transition-[background-color,color,opacity] hover:bg-neutral-800 motion-reduce:transition-none";
+  "inline-flex min-h-11 touch-manipulation items-center justify-center gap-2 rounded-md bg-neutral-950 px-3 text-sm font-medium text-white transition-[background-color,color,opacity] hover:bg-neutral-800 motion-reduce:transition-none";
 
 const secondaryButtonClass =
-  "inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-neutral-200 bg-white px-3 text-sm font-medium text-neutral-700 transition-[background-color,border-color,color] hover:border-neutral-300 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none";
+  "inline-flex min-h-11 touch-manipulation items-center justify-center gap-2 rounded-md border border-neutral-200 bg-white px-3 text-sm font-medium text-neutral-700 transition-[background-color,border-color,color] hover:border-neutral-300 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none";
 
 const statCardClass = "min-w-0 rounded-lg border border-neutral-200 bg-white p-4 shadow-sm";
 

@@ -33,10 +33,10 @@ const inputClass =
   "h-11 w-full rounded-md border border-neutral-300 bg-white px-3 text-sm text-neutral-950 outline-none transition-[border-color,box-shadow] placeholder:text-neutral-400 focus:border-neutral-950 focus-visible:ring-2 focus-visible:ring-neutral-950/10 disabled:cursor-not-allowed disabled:bg-neutral-50 disabled:text-neutral-400 motion-reduce:transition-none";
 
 const primaryButtonClass =
-  "inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-neutral-950 px-4 text-sm font-semibold text-white transition-[background-color,color,opacity] hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none";
+  "inline-flex min-h-11 touch-manipulation items-center justify-center gap-2 rounded-md bg-neutral-950 px-4 text-sm font-semibold text-white transition-[background-color,color,opacity] hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none";
 
 const secondaryButtonClass =
-  "inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-neutral-200 bg-white px-3 text-sm font-medium text-neutral-700 transition-[background-color,border-color,color] hover:border-neutral-300 hover:bg-neutral-50 motion-reduce:transition-none";
+  "inline-flex min-h-11 touch-manipulation items-center justify-center gap-2 rounded-md border border-neutral-200 bg-white px-3 text-sm font-medium text-neutral-700 transition-[background-color,border-color,color] hover:border-neutral-300 hover:bg-neutral-50 motion-reduce:transition-none";
 
 const statCardClass = "min-w-0 rounded-lg border border-neutral-200 bg-white p-4 shadow-sm";
 
@@ -273,7 +273,7 @@ export function AdminDashboard({ initialLinks, initialLongUrl }: AdminDashboardP
             <div className="mt-5 rounded-md border border-emerald-200 bg-emerald-50 p-3">
               <p className="mb-2 text-sm font-medium text-emerald-900">已创建</p>
               <button
-                className={`flex min-h-11 w-full items-center justify-between gap-3 rounded-md bg-white px-3 py-2 text-left text-sm text-emerald-950 ring-1 ring-emerald-200 transition-[background-color,box-shadow] hover:bg-emerald-50/60 motion-reduce:transition-none ${focusRing}`}
+                className={`flex min-h-11 w-full touch-manipulation items-center justify-between gap-3 rounded-md bg-white px-3 py-2 text-left text-sm text-emerald-950 ring-1 ring-emerald-200 transition-[background-color,box-shadow] hover:bg-emerald-50/60 motion-reduce:transition-none ${focusRing}`}
                 type="button"
                 onClick={() => copy(createdUrl, "created")}
               >
@@ -310,7 +310,7 @@ export function AdminDashboard({ initialLinks, initialLongUrl }: AdminDashboardP
                 <article key={link.slug} className="p-4">
                   <div className="flex items-start justify-between gap-3">
                     <button
-                      className={`flex min-w-0 flex-1 items-start gap-2 rounded-sm text-left ${focusRing}`}
+                      className={`flex min-w-0 flex-1 touch-manipulation items-start gap-2 rounded-sm text-left ${focusRing}`}
                       type="button"
                       onClick={() => copy(link.shortUrl, link.slug)}
                     >
@@ -333,7 +333,7 @@ export function AdminDashboard({ initialLinks, initialLongUrl }: AdminDashboardP
                       </Link>
                       <button
                         aria-label={`删除 /${link.slug}`}
-                        className={`inline-flex size-11 items-center justify-center rounded-md border border-neutral-200 bg-white text-red-600 transition-[background-color,border-color,color] hover:border-red-200 hover:bg-red-50 motion-reduce:transition-none ${focusRing}`}
+                        className={`inline-flex size-11 touch-manipulation items-center justify-center rounded-md border border-neutral-200 bg-white text-red-600 transition-[background-color,border-color,color] hover:border-red-200 hover:bg-red-50 motion-reduce:transition-none ${focusRing}`}
                         type="button"
                         onClick={() => deleteLink(link.slug)}
                         title="删除"
@@ -393,7 +393,7 @@ export function AdminDashboard({ initialLinks, initialLongUrl }: AdminDashboardP
                       <td className="px-4 py-3">
                         <div className="flex min-w-0 flex-col gap-1">
                           <button
-                            className={`inline-flex max-w-[260px] items-center gap-2 rounded-sm text-left font-medium text-neutral-950 ${focusRing}`}
+                            className={`inline-flex max-w-[260px] touch-manipulation items-center gap-2 rounded-sm text-left font-medium text-neutral-950 ${focusRing}`}
                             type="button"
                             onClick={() => copy(link.shortUrl, link.slug)}
                           >
@@ -433,7 +433,7 @@ export function AdminDashboard({ initialLinks, initialLongUrl }: AdminDashboardP
                           </Link>
                           <button
                             aria-label={`删除 /${link.slug}`}
-                            className={`inline-flex size-11 items-center justify-center rounded-md border border-neutral-200 bg-white text-red-600 transition-[background-color,border-color,color] hover:border-red-200 hover:bg-red-50 motion-reduce:transition-none sm:size-9 ${focusRing}`}
+                            className={`inline-flex size-11 touch-manipulation items-center justify-center rounded-md border border-neutral-200 bg-white text-red-600 transition-[background-color,border-color,color] hover:border-red-200 hover:bg-red-50 motion-reduce:transition-none sm:size-9 ${focusRing}`}
                             type="button"
                             onClick={() => deleteLink(link.slug)}
                             title="删除"
